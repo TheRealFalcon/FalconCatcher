@@ -1,6 +1,7 @@
 package com.falconware.falconcatcher;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -67,4 +68,15 @@ public class Database {
 	}
 	
 	//public void addEpisode(String feedUrl)
+	
+	public Cursor getSubscriptions() {
+		String table = "feed";
+		String[] columns = new String[] {"url", "title", "imagePath"};
+		String where = null; //return everything
+		String[] whereArgs = null;
+		String groupBy = null;
+		String having = null;
+		String orderBy = null;
+		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
+	}
 }

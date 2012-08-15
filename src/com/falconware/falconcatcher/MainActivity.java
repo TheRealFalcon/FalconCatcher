@@ -15,11 +15,15 @@ import android.widget.TextView;
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+    private Database mDb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        // Initialize database
+        mDb = new Database(this);
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -68,7 +72,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		fragment.setArguments(args);    		
     	}
     	else {
-    		fragment = new SubscriptionsFragment();    		
+    		fragment = new SubscriptionsFragment(mDb);    		
     	}
     	getSupportFragmentManager().beginTransaction()
 		.replace(R.id.container, fragment)
