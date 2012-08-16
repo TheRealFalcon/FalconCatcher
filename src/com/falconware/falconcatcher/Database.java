@@ -25,12 +25,12 @@ public class Database {
 		//TODO
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
-						"feedId INTEGER, " +
+						"feedUrl TEXT, " +
 						"url TEXT, " +
 						"title TEXT, " +
 						"description TEXT, " +
 						"author TEXT, " +
-						"published TEXT, " +
+						"publishedDate TEXT, " +
 						"localFile TEXT);";
 
 		DictionaryOpenHelper(Context context) {
@@ -67,13 +67,34 @@ public class Database {
 		return mDb.insert("feed", null, insertValues);
 	}
 	
-	//public void addEpisode(String feedUrl)
+	public long addEpisode(String feedUrl, String episodeUrl, String title, String description,
+			String author, String publishedDate) {
+		ContentValues insertValues = new ContentValues();
+		insertValues.put("feedUrl", feedUrl);
+		insertValues.put("url", episodeUrl);
+		insertValues.put("title", title);
+		insertValues.put("description", description);
+		insertValues.put("author", author);
+		insertValues.put("publishedDate", publishedDate);
+		return mDb.insert("episode", null, insertValues);
+	}
 	
 	public Cursor getSubscriptions() {
 		String table = "feed";
 		String[] columns = new String[] {"url", "title", "imagePath"};
 		String where = null; //return everything
 		String[] whereArgs = null;
+		String groupBy = null;
+		String having = null;
+		String orderBy = null;
+		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
+	}
+	
+	public Cursor getEpisodes(String feedUrl) {
+		String table = "episode";
+		String[] columns = new String[] {"url", "title", "description", "author", "publishedDate"};
+		String where = "feedUrl=?";
+		String[] whereArgs = new String[] {"feedUrl"};
 		String groupBy = null;
 		String having = null;
 		String orderBy = null;
