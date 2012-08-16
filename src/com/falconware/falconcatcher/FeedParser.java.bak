@@ -1,47 +1,33 @@
 package com.falconware.falconcatcher;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import android.util.Xml;
 
 import com.google.code.rome.android.repackaged.com.sun.syndication.feed.synd.SyndEnclosure;
 import com.google.code.rome.android.repackaged.com.sun.syndication.feed.synd.SyndEntry;
 import com.google.code.rome.android.repackaged.com.sun.syndication.feed.synd.SyndFeed;
 import com.google.code.rome.android.repackaged.com.sun.syndication.feed.synd.SyndImage;
+import com.google.code.rome.android.repackaged.com.sun.syndication.io.FeedException;
+import com.google.code.rome.android.repackaged.com.sun.syndication.io.SyndFeedInput;
+import com.google.code.rome.android.repackaged.com.sun.syndication.io.XmlReader;
 import com.sun.syndication.feed.module.itunes.FeedInformation;
 import com.sun.syndication.feed.module.mediarss.MediaModule;
-
 
 public class FeedParser {
 	private SyndFeed mFeed;
 	private String mFeedUrl;
 	
-	public FeedParser(String url) throws XmlPullParserException, IOException
+	public FeedParser(String url) throws FeedException, IOException
 	{
 		mFeedUrl = url;
-		XmlPullParser parser = Xml.newPullParser();
-		parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-		parser.setInput(downloadUrl(url), null);
-		parser.nextTag();
-		readFeed(parser);
-	}
-	
-	private InputStream downloadUrl(String urlString) throws IOException {
-		URL url = new URL(urlString);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		try {
-			InputStream in = conn.getInputStream();
-			return in;
-		} finally {
-			conn.disconnect();
-		}
+		mFeed = null;
+		URL feedUrl = new URL(url);
+		System.out.println("url");
+		SyndFeedInput input = new SyndFeedInput();
+		System.out.println("input");
+		mFeed = input.build(new XmlReader(feedUrl));
+		System.out.println("mfeed");
 	}
 	
 	private String getFeedUrl() {
