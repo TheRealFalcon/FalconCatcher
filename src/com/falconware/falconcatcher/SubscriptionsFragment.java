@@ -1,6 +1,7 @@
 
 package com.falconware.falconcatcher;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,24 +13,23 @@ import android.widget.ExpandableListView;
 public class SubscriptionsFragment extends Fragment {
 	private Database mDb;
 	
-	public SubscriptionsFragment(Database db) {
-		mDb = db;
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mDb = new Database(getActivity());
 	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		ExpandableListView view = (ExpandableListView)inflater.inflate(R.layout.subscriptions, container, false);
-		SubscriptionsAdapter adapter = new SubscriptionsAdapter(getActivity(), mDb.getSubscriptions(), mDb);
+		Activity currentActivity = getActivity();
+		SubscriptionsAdapter adapter = new SubscriptionsAdapter(currentActivity, mDb.getSubscriptions(), mDb);
 		view.setAdapter(adapter);
 
-		new DownloadFeedTask(getActivity(), mDb, view).execute("http://10.0.2.2/podcast1.xml");
+		new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
 		return view;
 	}
+}
 
 
 //		SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
@@ -71,4 +71,4 @@ public class SubscriptionsFragment extends Fragment {
 //		}
 //		return result;
 //	}
-}
+//}

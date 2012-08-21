@@ -1,9 +1,9 @@
 package com.falconware.falconcatcher;
 
 import android.app.ActionBar;
+import android.support.v4.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,22 +15,18 @@ import android.widget.TextView;
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
-    private Database mDb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        // Initialize database
-        mDb = new Database(this);
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // For each of the sections in the app, add a tab to the action bar.
-        actionBar.addTab(actionBar.newTab().setText(R.string.title_section1).setTabListener(this));
+        actionBar.addTab(actionBar.newTab().setText(R.string.title_subscriptions).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section2).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section3).setTabListener(this));
     }
@@ -72,7 +68,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		fragment.setArguments(args);    		
     	}
     	else {
-    		fragment = new SubscriptionsFragment(mDb);    		
+    		fragment = new SubscriptionsFragment();
     	}
     	getSupportFragmentManager().beginTransaction()
 		.replace(R.id.container, fragment)

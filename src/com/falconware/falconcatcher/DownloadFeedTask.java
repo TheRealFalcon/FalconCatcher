@@ -11,6 +11,7 @@ public class DownloadFeedTask extends AsyncTask<String, Void, Boolean> {
 	private ExpandableListView mView;
 	
 	public DownloadFeedTask(Context context, Database db, ExpandableListView view) {
+		System.out.println("DownloadFeedTask ctor");
 		mContext = context;
 		mDb = db;
 		mView = view;
@@ -19,10 +20,11 @@ public class DownloadFeedTask extends AsyncTask<String, Void, Boolean> {
 	@Override
 	protected Boolean doInBackground(String... url) {
 		try {
-			FeedParser parser = new FeedParser(url[0]);
-			parser.parseFeedProperties(mDb);
-			parser.parseEpisodeList(mDb);
+			FeedParser parser = new FeedParser(url[0], mContext);
+			//parser.parseFeedProperties(mDb);
+			//parser.parseEpisodeList(mDb);
 		} catch (Exception e) { //TODO: Don't catch top level Exception
+			e.printStackTrace();
 			return false;
 		}
 		return true;

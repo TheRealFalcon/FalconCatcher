@@ -57,6 +57,9 @@ public class Database {
 	public Database(Context context) {
 		DictionaryOpenHelper helper = new DictionaryOpenHelper(context);
 		mDb = helper.getWritableDatabase();
+		//TODO: This would really suck to keep here
+		mDb.execSQL("DELETE FROM feed");
+		mDb.execSQL("DELETE FROM episode");
 	}
 	
 	public long addFeed(String url, String title, String imagePath) {
