@@ -51,7 +51,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         return true;
     }
 
-    
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+    	return true;
+    }
 
     @Override
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {

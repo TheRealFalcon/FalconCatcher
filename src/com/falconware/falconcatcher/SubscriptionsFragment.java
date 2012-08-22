@@ -26,7 +26,7 @@ public class SubscriptionsFragment extends Fragment {
 		SubscriptionsAdapter adapter = new SubscriptionsAdapter(currentActivity, mDb.getSubscriptions(), mDb);
 		view.setAdapter(adapter);
 
-		new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
+		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
 		return view;
 	}
 }

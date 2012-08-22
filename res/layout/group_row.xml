@@ -5,11 +5,15 @@
     android:layout_height="fill_parent">
  
     <TextView android:id="@+id/row_name"
-         android:paddingLeft="50px"
-         android:textSize="20px"
-         android:textColor="@drawable/blue"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:paddingLeft="30dp" />
+    <!-- 
+             android:textColor="@drawable/blue"
          android:textStyle="normal"
+             android:paddingLeft="50px"
+         android:textSize="20px"
          android:layout_width="320px"
-         android:layout_height="wrap_content"/>
+         -->
  
 </LinearLayout>

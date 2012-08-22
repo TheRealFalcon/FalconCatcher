@@ -24,8 +24,7 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 	}
 	@Override
 	protected Cursor getChildrenCursor(Cursor groupCursor) {
-		// TODO Auto-generated method stub
-		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex("title")));
+		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex("url")));
 	}
 
 }

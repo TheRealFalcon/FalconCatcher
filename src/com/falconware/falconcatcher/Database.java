@@ -18,13 +18,14 @@ public class Database {
 						"value TEXT);";
 		private static final String FEED_CREATE =
 				"CREATE TABLE feed (" +
-						"id INTEGER PRIMARY KEY, " +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						"url TEXT, " +
 						"title TEXT, " +
 						"imagePath TEXT);";
 		//TODO
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						"feedUrl TEXT, " +
 						"url TEXT, " +
 						"title TEXT, " +
@@ -55,11 +56,10 @@ public class Database {
 	}
 	
 	public Database(Context context) {
+		
 		DictionaryOpenHelper helper = new DictionaryOpenHelper(context);
 		mDb = helper.getWritableDatabase();
-		//TODO: This would really suck to keep here
-		mDb.execSQL("DELETE FROM feed");
-		mDb.execSQL("DELETE FROM episode");
+		
 	}
 	
 	public long addFeed(String url, String title, String imagePath) {
@@ -84,7 +84,7 @@ public class Database {
 	
 	public Cursor getSubscriptions() {
 		String table = "feed";
-		String[] columns = new String[] {"url", "title", "imagePath"};
+		String[] columns = new String[] {"_id", "url", "title", "imagePath"};
 		String where = null; //return everything
 		String[] whereArgs = null;
 		String groupBy = null;
@@ -95,9 +95,9 @@ public class Database {
 	
 	public Cursor getEpisodes(String feedUrl) {
 		String table = "episode";
-		String[] columns = new String[] {"url", "title", "description", "author", "publishedDate"};
+		String[] columns = new String[] {"_id", "url", "title", "description", "author", "publishedDate"};
 		String where = "feedUrl=?";
-		String[] whereArgs = new String[] {"feedUrl"};
+		String[] whereArgs = new String[] {feedUrl};
 		String groupBy = null;
 		String having = null;
 		String orderBy = null;
