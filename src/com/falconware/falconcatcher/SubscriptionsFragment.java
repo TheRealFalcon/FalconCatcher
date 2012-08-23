@@ -4,7 +4,10 @@ package com.falconware.falconcatcher;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
@@ -22,6 +25,8 @@ public class SubscriptionsFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		ExpandableListView view = (ExpandableListView)inflater.inflate(R.layout.subscriptions, container, false);
+		registerForContextMenu(view);
+		
 		Activity currentActivity = getActivity();
 		SubscriptionsAdapter adapter = new SubscriptionsAdapter(currentActivity, mDb.getSubscriptions(), mDb);
 		view.setAdapter(adapter);
@@ -29,6 +34,25 @@ public class SubscriptionsFragment extends Fragment {
 		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
 		return view;
 	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		ExpandableListView.ExpandableListContextMenuInfo info =
+	            (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+	    if (ExpandableListView.getPackedPositionType(info.packedPosition) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+	    	getActivity().getMenuInflater().inflate(R.menu.child_row, menu);
+	    }
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		if (item.getTitle().equals(getString(R.string.menu_download))) {
+			System.out.println("Download selected!");
+		}
+		return super.onContextItemSelected(item);
+	}
+	
 }
 
 
