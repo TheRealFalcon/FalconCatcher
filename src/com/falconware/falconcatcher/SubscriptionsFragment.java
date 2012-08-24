@@ -65,7 +65,7 @@ public class SubscriptionsFragment extends Fragment {
 			System.out.println("Download selected!");
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
-			Cursor cursor = adapter.getGroup(0);
+			Cursor cursor = adapter.getGroup(mSelectedGroupRow);
 			mDb.removeFeed(cursor.getString(cursor.getColumnIndex("title")));
 			adapter.setGroupCursor(mDb.getSubscriptions());
 			//adapter.notifyDataSetChanged();
