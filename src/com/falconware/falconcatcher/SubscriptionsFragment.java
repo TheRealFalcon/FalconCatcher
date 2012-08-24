@@ -1,7 +1,7 @@
 
 package com.falconware.falconcatcher;
 
-import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.ContextMenu;
@@ -14,7 +14,11 @@ import android.widget.ExpandableListView;
 
 
 public class SubscriptionsFragment extends Fragment {
+	private int mSelectedGroupRow;
+	private int mSelectedChildRow;
+	private SubscriptionsAdapter adapter;
 	private Database mDb;
+	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -27,8 +31,9 @@ public class SubscriptionsFragment extends Fragment {
 		ExpandableListView view = (ExpandableListView)inflater.inflate(R.layout.subscriptions, container, false);
 		registerForContextMenu(view);
 		
-		Activity currentActivity = getActivity();
-		SubscriptionsAdapter adapter = new SubscriptionsAdapter(currentActivity, mDb.getSubscriptions(), mDb);
+		//Activity currentActivity = getActivity();
+		adapter = new SubscriptionsAdapter(getActivity().getApplicationContext(), 
+				mDb.getSubscriptions(), mDb);
 		view.setAdapter(adapter);
 
 		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
@@ -40,15 +45,30 @@ public class SubscriptionsFragment extends Fragment {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		ExpandableListView.ExpandableListContextMenuInfo info =
 	            (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
-	    if (ExpandableListView.getPackedPositionType(info.packedPosition) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+		mSelectedGroupRow = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+	    if (ExpandableListView.getPackedPositionType(info.packedPosition) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {	    	
+	    	mSelectedChildRow = ExpandableListView.getPackedPositionChild(info.packedPosition);
 	    	getActivity().getMenuInflater().inflate(R.menu.child_row, menu);
 	    }
+	    else {
+	    	mSelectedChildRow = -1;
+	    	getActivity().getMenuInflater().inflate(R.menu.group_row, menu);
+	    }
+	    System.out.println("Selected group: " + mSelectedGroupRow);
+	    System.out.println("Selected child: " + mSelectedChildRow);
 	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		if (item.getTitle().equals(getString(R.string.menu_download))) {
+		String itemTitle = item.getTitle().toString();
+		if (itemTitle.equals(getString(R.string.menu_download))) {
 			System.out.println("Download selected!");
+		}
+		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
+			Cursor cursor = adapter.getGroup(0);
+			mDb.removeFeed(cursor.getString(cursor.getColumnIndex("title")));
+			adapter.setGroupCursor(mDb.getSubscriptions());
+			//adapter.notifyDataSetChanged();
 		}
 		return super.onContextItemSelected(item);
 	}

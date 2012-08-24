@@ -4,11 +4,13 @@
     <string name="title_section3">Section 3</string>
     <string name="title_section2">Section 2</string>
     <string name="title_subscriptions">Subscriptions</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_add_subscription">Add Subscription</string>
+    <string name="add_subscription">Feed URL:</string>
+    <string name="add_subscription_default">http://10.0.2.2:8080/freakonomics.xml</string>
     <string name="menu_download">Download</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="menu_unsubscribe">Unsubscribe</string>
+    <string name="title_activity_main">FalconCatcher</string>
     <drawable name="white">#ffffff</drawable>
     <drawable name="blue">#2554C7</drawable>
     <drawable name="green">#347C2C</drawable>

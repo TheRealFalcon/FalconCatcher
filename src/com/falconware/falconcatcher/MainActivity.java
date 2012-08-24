@@ -1,9 +1,12 @@
 package com.falconware.falconcatcher;
 
 import android.app.ActionBar;
-import android.support.v4.app.Fragment;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -53,6 +56,30 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
+    	if (item.getTitle().equals(getString(R.string.menu_add_subscription))) {
+    		final View layout = View.inflate(this, R.layout.add_subscription, null);
+    		final Activity activity = this;
+    		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    		alert.setView(layout)
+    		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					
+					new DownloadFeedTask(activity).execute("http://10.0.2.2:8080/freakonomics.xml");				
+				}
+    			
+    		})
+    		.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					
+				}
+    			
+    		})
+    		.show();
+    		
+    	}
     	return true;
     }
 

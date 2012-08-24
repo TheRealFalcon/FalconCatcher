@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 
 
 public class Database {
@@ -102,5 +103,17 @@ public class Database {
 		String having = null;
 		String orderBy = null;
 		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
+	}
+	
+	public void removeFeed(String feedName) {
+		SQLiteStatement statement = mDb.compileStatement("SELECT url FROM feed WHERE title=?");
+		statement.bindString(1, feedName);
+		String result = statement.simpleQueryForString();
+		statement = mDb.compileStatement("DELETE FROM episode WHERE feedUrl=?");
+		statement.bindString(1, result);
+		statement.executeUpdateDelete();
+		statement = mDb.compileStatement("DELETE FROM feed WHERE url=?");
+		statement.bindString(1, result);
+		statement.executeUpdateDelete();
 	}
 }

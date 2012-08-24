@@ -26,9 +26,12 @@ public class FeedParser {
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
 			mParser.setInput(in, null);
-		} catch (Exception e) {
+		} catch (XmlPullParserException e) {
 			e.printStackTrace();
-			return;
+			throw e;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw e;
 		}
 		readFeed();
 	}
