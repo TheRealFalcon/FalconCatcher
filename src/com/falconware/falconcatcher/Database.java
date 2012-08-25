@@ -27,7 +27,7 @@ public class Database {
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						"feedUrl TEXT, " +
+						"feedTitle TEXT, " +
 						"url TEXT, " +
 						"title TEXT, " +
 						"description TEXT, " +
@@ -105,15 +105,15 @@ public class Database {
 		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
 	}
 	
-	public void removeFeed(String feedName) {
-		SQLiteStatement statement = mDb.compileStatement("SELECT url FROM feed WHERE title=?");
-		statement.bindString(1, feedName);
-		String result = statement.simpleQueryForString();
-		statement = mDb.compileStatement("DELETE FROM episode WHERE feedUrl=?");
-		statement.bindString(1, result);
+	public void removeFeed(String feedTitle) {
+		//SQLiteStatement statement = mDb.compileStatement("SELECT url FROM feed WHERE title=?");
+		//statement.bindString(1, feedName);
+		//String result = statement.simpleQueryForString();
+		SQLiteStatement statement = mDb.compileStatement("DELETE FROM episode WHERE feedTitle=?");
+		statement.bindString(1, feedTitle);
 		statement.executeUpdateDelete();
-		statement = mDb.compileStatement("DELETE FROM feed WHERE url=?");
-		statement.bindString(1, result);
+		statement = mDb.compileStatement("DELETE FROM feed WHERE title=?");
+		statement.bindString(1, feedTitle);
 		statement.executeUpdateDelete();
 	}
 }

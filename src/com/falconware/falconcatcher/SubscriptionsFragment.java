@@ -62,7 +62,11 @@ public class SubscriptionsFragment extends Fragment {
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
-			System.out.println("Download selected!");
+			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
+			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
+			String url = cursor.getString(cursor.getColumnIndex("url"));
+			Storage.downloadEpisode(feedTitle, episodeTitle, url);
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = adapter.getGroup(mSelectedGroupRow);

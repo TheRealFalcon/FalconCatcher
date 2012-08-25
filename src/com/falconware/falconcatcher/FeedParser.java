@@ -36,23 +36,6 @@ public class FeedParser {
 		readFeed();
 	}
 	
-//	private InputStream downloadUrl(String urlString) throws IOException {
-//		URL url = new URL(urlString);
-//		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//		BufferedInputStream in = null;
-//		try {
-//			in = new BufferedInputStream(conn.getInputStream());
-//			conn.disconnect();
-//			//in.read();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			throw e;
-//		} finally {
-//			conn.disconnect();
-//		}
-//		return in;
-//	}
-//	
 	public void readFeed() throws XmlPullParserException, IOException {
 		int eventType = mParser.getEventType();
 		long time1 = System.currentTimeMillis();
@@ -192,128 +175,43 @@ public class FeedParser {
 //	}
 //}
 //}
-//	private String getFeedUrl() {
-//		String imageUrl = null;
-//		int attempt = 0;
-//		outerloop:
-//		while (imageUrl == null) {
-//			try {
-//				switch (attempt) {
-//				case 0:
-//					imageUrl = ((SyndImage)mFeed.getImage()).getUrl();
-//					break outerloop;
-//				case 1:
-//					imageUrl = ((MediaModule)mFeed.getModule(MediaModule.URI)).getMetadata().getThumbnail()[0].getUrl().toString();
-//					break outerloop;
-//				case 2:
-//					imageUrl = ((FeedInformation)mFeed.getModule("http://www.itunes.com/dtds/podcast-1.0.dtd")).getImage().toString();
-//				default:
-//					break outerloop;
-//				}
-//			} catch (Exception e) {
-//				//We'll try the next one
-//				System.out.println("Failed " + attempt + " time(s) through loop");
-//			}
-//			attempt++;
-//		}
-//		if (imageUrl == null) {
-//			return "";
-//		}
-//		return imageUrl;
-//	}
-//	
-//	private String getEntryAuthor(SyndEntry entry) {
-//		String author = entry.getAuthor();
-//		if (author == null || author.isEmpty()) {
-//			author = ((FeedInformation)mFeed.getModule("http://www.itunes.com/dtds/podcast-1.0.dtd")).getAuthor();
-//		}
-//		@SuppressWarnings("rawtypes")
-//		List authors = entry.getAuthors();
-//		if (authors == null || authors.isEmpty()) {
-//			authors = entry.getContributors();
-//		}
-//		if (authors != null && !authors.isEmpty()) {
-//			for (Object auth : authors) {
-//				author = author + (String)auth + ", ";
-//			}
-//			author = author.substring(0, author.length()-2);
-//		}
-//		if (author == null) {
-//			return "";
-//		}
-//		return author;
-//	}
-//	
-//	private String getEntryUrl(SyndEntry entry) {
-//		String url;
-//		
-//		//Attempt #1
-//		url = entry.getLink();
-//		if (url != null && isAudioFile(url)) {
-//			return url;
-//		}
-//		
-//		//Attempt #2
-//		url = entry.getUri();
-//		if (url != null && isAudioFile(url)) {
-//			return url;
-//		}
-//
-//		//Attempt #3
-//		url = ((SyndEnclosure)entry.getEnclosures().get(0)).getUrl();
-//		if (url != null && isAudioFile(url)) {
-//			return url;
-//		}
-//		
-//		return "";
-//	}
-//		
+	
 //	private boolean isAudioFile(String url) {
 //		return url.endsWith(".mp3");
 //	}
-//	public void parseFeedProperties(Database db) throws Exception {  //TODO: Cleanup top level exception
-//		//System.out.println(feed);
-//		String title = mFeed.getTitle();
-//		String imageUrl = getFeedUrl();
-//		
-//		db.addFeed(mFeedUrl, title, imageUrl);
-//		System.out.println("Title: " + title);
-//		System.out.println("Image: " + imageUrl);
-//		db.addFeed(mFeedUrl, title, imageUrl);
-//	}
 //	
-//	public void parseEpisodeList(Database db) throws Exception {  //TODO: Cleanup top level exception
-//		//System.out.println(mFeed);
-//		SyndEntry entry = (SyndEntry)mFeed.getEntries().get(0);
-//		System.out.println(entry);
-//		
-//		String author = getEntryAuthor(entry);
-//		String url = getEntryUrl(entry);
-//		String title = entry.getTitle();
-//		String description = entry.getDescription().getValue();
-//		//String length = 
-//
-//	
-//		
-//		Date publishedDate = entry.getPublishedDate();
-//		String localFile = null;
-//		
-//		System.out.println("Url: " + url);
-//		System.out.println("title: " + title);
-//		System.out.println("description: " + description);
-//		System.out.println("author: " + author);
-//		System.out.println("published date: " + publishedDate);
-//		
-//		db.addEpisode(mFeedUrl, url, title, description, author, publishedDate.toString());
-//		
-//		
-////		System.out.println("Authors: " + entry.getAuthors());
-////		System.out.println("Authors: " + entry.getContributors());
-////		System.out.println("Authors: " + entry.getAuthor());
-//		
-//
-//		
-//	}
 
-
+////STORE AND GET IMAGES TO/FROM DATABASE
+////where we want to download it from
+//URL url = new URL(IMAGE_URL);  //http://example.com/image.jpg
+////open the connection
+//URLConnection ucon = url.openConnection();
+////buffer the download
+//InputStream is = ucon.getInputStream();
+//BufferedInputStream bis = new BufferedInputStream(is,128);
+//ByteArrayBuffer baf = new ByteArrayBuffer(128);
+////get the bytes one by one
+//int current = 0;
+//while ((current = bis.read()) != -1) {
+//      baf.append((byte) current);
 //}
+//
+////GET IMAGE BACK OUT
+////store the data as a ByteArray
+////db is a SQLiteDatabase object
+//ContentValues dataToInsert = new ContentValues();                          
+//dataToInsert.put(TABLE_FIELD,baf.toByteArray());
+//db.insert(TABLE_NAME, null, dataToInsert);
+//And this is how you get the data back and convert it into a Bitmap:
+//
+////select the data
+//Cursor cursor = db.query(TABLE_STATIONLIST, new String[] {TABLE_FIELD},
+//                                              null, null, null, null, null);
+////get it as a ByteArray
+//byte[] imageByteArray=cursor.getBlob(1);
+////the cursor is not needed anymore
+//cursor.close();
+//
+////convert it back to an image
+//ByteArrayInputStream imageStream = new ByteArrayInputStream(mybyte);
+//Bitmap theImage = BitmapFactory.decodeStream(imageStream));
