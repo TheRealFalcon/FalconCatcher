@@ -71,10 +71,10 @@ public class Database {
 		return mDb.insert("feed", null, insertValues);
 	}
 	
-	public long addEpisode(String feedUrl, String episodeUrl, String title, String description,
+	public long addEpisode(String feedTitle, String episodeUrl, String title, String description,
 			String author, String publishedDate) {
 		ContentValues insertValues = new ContentValues();
-		insertValues.put("feedUrl", feedUrl);
+		insertValues.put("feedTitle", feedTitle);
 		insertValues.put("url", episodeUrl);
 		insertValues.put("title", title);
 		insertValues.put("description", description);
@@ -94,11 +94,11 @@ public class Database {
 		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
 	}
 	
-	public Cursor getEpisodes(String feedUrl) {
+	public Cursor getEpisodes(String feedTitle) {
 		String table = "episode";
-		String[] columns = new String[] {"_id", "url", "title", "description", "author", "publishedDate"};
-		String where = "feedUrl=?";
-		String[] whereArgs = new String[] {feedUrl};
+		String[] columns = new String[] {"_id", "feedTitle", "url", "title", "description", "author", "publishedDate"};
+		String where = "feedTitle=?";
+		String[] whereArgs = new String[] {feedTitle};
 		String groupBy = null;
 		String having = null;
 		String orderBy = null;

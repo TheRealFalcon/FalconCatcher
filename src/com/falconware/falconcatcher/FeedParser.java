@@ -12,12 +12,14 @@ import android.util.Xml;
 
 public class FeedParser {
 	private String mFeedUrl;
+	private String mTitle;
 	private Database mDb;
 	private XmlPullParser mParser;
 	
 	public FeedParser(String urlString, Context context) throws XmlPullParserException, IOException
 	{
 		mFeedUrl = urlString;
+		mTitle = "";
 		mDb = new Database(context);
 		mParser = Xml.newPullParser();
 		mParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -62,14 +64,13 @@ public class FeedParser {
 		//System.out.println("In parse channel");
 		int eventType = mParser.next();
 		//When getText() returns non-null, getName() returns null
-		String title = "";
 		String imageUrl = "";
 		while (eventType != XmlPullParser.END_TAG || !mParser.getName().equals("channel")) {
 			if (eventType == XmlPullParser.START_TAG) {
 				//System.out.println("Start Tag: " + parser.getName());
 				String tagName = mParser.getName();
 				if (tagName.equals("title")) {
-					title = mParser.nextText();
+					mTitle = mParser.nextText();
 				}
 				else if (tagName.equals("itunes:image")) {
 					imageUrl = getAttribute("href");
@@ -80,7 +81,7 @@ public class FeedParser {
 			}
 			eventType = mParser.next();
 		}
-		mDb.addFeed(mFeedUrl, title, imageUrl);
+		mDb.addFeed(mFeedUrl, mTitle, imageUrl);
 		
 	}
 	
@@ -119,7 +120,7 @@ public class FeedParser {
 			}
 			eventType = mParser.next();
 		}
-		mDb.addEpisode(mFeedUrl, episodeUrl, title, description, author, pubDate);
+		mDb.addEpisode(mTitle, episodeUrl, title, description, author, pubDate);
 	}
 	
 	private String getAttribute(String attribute) {

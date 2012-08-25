@@ -62,7 +62,14 @@ public class SubscriptionsFragment extends Fragment {
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
+//			System.out.println("Selected group: " + mSelectedGroupRow);
+//			System.out.println("Selected row: " + mSelectedChildRow);
 			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+//			System.out.println("Count: " + cursor.getCount());
+//			System.out.println("column count: " + cursor.getColumnCount());
+//			for (String column : cursor.getColumnNames()) {
+//				System.out.println(column);
+//			}
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
 			String url = cursor.getString(cursor.getColumnIndex("url"));
