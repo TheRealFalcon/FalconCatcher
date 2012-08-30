@@ -31,7 +31,7 @@ public class Database {
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						"url TEXT, " +
 						"title TEXT, " +
-						"imagePath TEXT);";
+						"image TEXT);";
 		//TODO
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
@@ -94,7 +94,7 @@ public class Database {
 	
 	public Cursor getSubscriptions() {
 		String table = "feed";
-		String[] columns = new String[] {"_id", "url", "title", "imagePath"};
+		String[] columns = new String[] {"_id", "url", "title", "image"};
 		String where = null; //return everything
 		String[] whereArgs = null;
 		String groupBy = null;
