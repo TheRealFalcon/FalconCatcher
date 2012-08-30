@@ -10,7 +10,10 @@
     <string name="add_subscription_default">http://10.0.2.2:8080/freakonomics.xml</string>
     <string name="menu_download">Download</string>
     <string name="menu_unsubscribe">Unsubscribe</string>
+    <string name="menu_play">Play</string>
     <string name="title_activity_main">FalconCatcher</string>
+    <string name="button_play">play</string>
+    <string name="button_pause">pause</string>
     <drawable name="white">#ffffff</drawable>
     <drawable name="blue">#2554C7</drawable>
     <drawable name="green">#347C2C</drawable>

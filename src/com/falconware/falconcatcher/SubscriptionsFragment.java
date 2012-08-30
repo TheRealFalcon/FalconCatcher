@@ -1,6 +1,8 @@
 
 package com.falconware.falconcatcher;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 
 
@@ -18,12 +21,14 @@ public class SubscriptionsFragment extends Fragment {
 	private int mSelectedChildRow;
 	private SubscriptionsAdapter adapter;
 	private Database mDb;
+	private Activity mActivity;
 	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mDb = new Database(getActivity());
+		mActivity = getActivity();
+		mDb = new Database(mActivity);
 	}
 	
 	@Override
@@ -31,8 +36,8 @@ public class SubscriptionsFragment extends Fragment {
 		ExpandableListView view = (ExpandableListView)inflater.inflate(R.layout.subscriptions, container, false);
 		registerForContextMenu(view);
 		
-		//Activity currentActivity = getActivity();
-		adapter = new SubscriptionsAdapter(getActivity().getApplicationContext(), 
+		//Activity currentActivity = mActivity;
+		adapter = new SubscriptionsAdapter(mActivity.getApplicationContext(), 
 				mDb.getSubscriptions(), mDb);
 		view.setAdapter(adapter);
 
@@ -48,38 +53,51 @@ public class SubscriptionsFragment extends Fragment {
 		mSelectedGroupRow = ExpandableListView.getPackedPositionGroup(info.packedPosition);
 	    if (ExpandableListView.getPackedPositionType(info.packedPosition) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {	    	
 	    	mSelectedChildRow = ExpandableListView.getPackedPositionChild(info.packedPosition);
-	    	getActivity().getMenuInflater().inflate(R.menu.child_row, menu);
+	    	mActivity.getMenuInflater().inflate(R.menu.child_row, menu);
 	    }
 	    else {
 	    	mSelectedChildRow = -1;
-	    	getActivity().getMenuInflater().inflate(R.menu.group_row, menu);
+	    	mActivity.getMenuInflater().inflate(R.menu.group_row, menu);
 	    }
 	    System.out.println("Selected group: " + mSelectedGroupRow);
 	    System.out.println("Selected child: " + mSelectedChildRow);
 	}
 	
+	//TODO: Put the logic to get the file path in a common place
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
-//			System.out.println("Selected group: " + mSelectedGroupRow);
-//			System.out.println("Selected row: " + mSelectedChildRow);
 			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-//			System.out.println("Count: " + cursor.getCount());
-//			System.out.println("column count: " + cursor.getColumnCount());
-//			for (String column : cursor.getColumnNames()) {
-//				System.out.println(column);
-//			}
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
 			String url = cursor.getString(cursor.getColumnIndex("url"));
-			Storage.downloadEpisode(feedTitle, episodeTitle, url);
+			long downloadId = Storage.downloadEpisode(mActivity, feedTitle, episodeTitle, url);
+			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = adapter.getGroup(mSelectedGroupRow);
 			mDb.removeFeed(cursor.getString(cursor.getColumnIndex("title")));
 			adapter.setGroupCursor(mDb.getSubscriptions());
 			//adapter.notifyDataSetChanged();
+		}
+		else if (itemTitle.equals(getString(R.string.menu_play))) {
+			System.out.println(mDb.getApplicationDirectory());
+			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
+			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
+			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");
+			String filename = mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
+			
+			Button button = (Button)mActivity.findViewById(R.id.play_or_pause_button);
+			button.setBackgroundResource(android.R.drawable.ic_media_pause);
+			button.setTag(getString(R.string.button_pause));
+			Intent playerIntent = new Intent(mActivity, PlayerService.class);
+			playerIntent.setAction(PlayerService.ACTION_PLAY);
+			//Bundle extras = playerIntent.getExtras();
+			//extras.putString("filename", filename);
+			playerIntent.putExtra("filename", filename);
+			mActivity.startService(playerIntent);	
 		}
 		return super.onContextItemSelected(item);
 	}

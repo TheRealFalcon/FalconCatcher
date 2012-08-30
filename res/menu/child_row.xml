@@ -2,4 +2,7 @@
     <item android:id="@+id/menu_download"
         android:title="@string/menu_download"
         android:showAsAction="never" />
+    <item android:id="@+id/menu_play"
+        android:title="@string/menu_play"
+        android:showAsAction="never" />
 </menu>

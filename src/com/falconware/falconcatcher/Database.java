@@ -1,10 +1,19 @@
 package com.falconware.falconcatcher;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.apache.http.util.ByteArrayBuffer;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Environment;
 
 
 public class Database {
@@ -63,11 +72,11 @@ public class Database {
 		
 	}
 	
-	public long addFeed(String url, String title, String imagePath) {
+	public long addFeed(String url, String title, String imageUrl) {
 		ContentValues insertValues = new ContentValues();
 		insertValues.put("url", url);
 		insertValues.put("title", title);
-		insertValues.put("imagePath", imagePath);
+		insertValues.put("image", imageToBuffer(imageUrl));
 		return mDb.insert("feed", null, insertValues);
 	}
 	
@@ -115,5 +124,76 @@ public class Database {
 		statement = mDb.compileStatement("DELETE FROM feed WHERE title=?");
 		statement.bindString(1, feedTitle);
 		statement.executeUpdateDelete();
+	}
+	
+	private byte[]  imageToBuffer(String imageUrl) {
+		try {
+			URL url = new URL(imageUrl);  //http://example.com/image.jpg
+			URLConnection con = url.openConnection();
+			InputStream is = con.getInputStream();
+			BufferedInputStream bis = new BufferedInputStream(is,128);
+			ByteArrayBuffer baf = new ByteArrayBuffer(128);
+
+			int current = 0;
+			while ((current = bis.read()) != -1) {
+				baf.append((byte) current);
+			}
+
+			return baf.toByteArray();
+		} catch (Exception e) {
+			//TODO: Do better exception handling
+			e.printStackTrace();
+			return null;
+		}
+	}
+		
+	//And this is how you get the data back and convert it into a Bitmap:
+	//
+	////select the data
+	//Cursor cursor = db.query(TABLE_STATIONLIST, new String[] {TABLE_FIELD},
+//	                                              null, null, null, null, null);
+	////get it as a ByteArray
+	//byte[] imageByteArray=cursor.getBlob(1);
+	////the cursor is not needed anymore
+	//cursor.close();
+	//
+	////convert it back to an image
+	//ByteArrayInputStream imageStream = new ByteArrayInputStream(mybyte);
+	//Bitmap theImage = BitmapFactory.decodeStream(imageStream));
+
+	
+	public String getApplicationDirectory() {
+		SQLiteStatement statement = mDb.compileStatement("SELECT value FROM settings WHERE key='applicationDirectory'");
+		String result;
+		try {
+			result = statement.simpleQueryForString();
+		} catch (SQLiteDoneException e) {
+			result = setApplicationDirectory();
+		}
+		return result;
+	}
+	
+	private String setApplicationDirectory() {
+		boolean externalAvailable = false;
+		boolean externalWritable = false;
+		String state = Environment.getExternalStorageState();
+		
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+		    // We can read and write the media
+		    externalAvailable = externalWritable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+		    // We can only read the media
+		    externalAvailable = true;
+		    externalWritable = false;
+		} else {
+		    // Something else is wrong. It may be one of many other states, but all we need
+		    //  to know is we can neither read nor write
+		    externalAvailable = externalWritable = false;
+		}
+		
+		if (externalAvailable && externalWritable) {
+			return Environment.getExternalStorageDirectory().toString() + "/FalconCatcher/";
+		}
+		return Environment.getDataDirectory().toString();
 	}
 }

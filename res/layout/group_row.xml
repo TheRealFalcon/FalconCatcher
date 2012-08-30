@@ -3,11 +3,17 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+    
+    <ImageView android:id="@+id/group_image"
+        android:contentDescription="Image for feed"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="30dp" />
  
-    <TextView android:id="@+id/row_name"
-         android:layout_width="match_parent"
+    <TextView android:id="@+id/group_name"
+         android:layout_width="wrap_content"
          android:layout_height="match_parent"
-         android:paddingLeft="30dp" />
+          />
     <!-- 
              android:textColor="@drawable/blue"
          android:textStyle="normal"

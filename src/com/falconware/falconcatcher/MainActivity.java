@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
@@ -32,6 +34,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         actionBar.addTab(actionBar.newTab().setText(R.string.title_subscriptions).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section2).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section3).setTabListener(this));
+        
+        
     }
 
     @Override
@@ -127,5 +131,28 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             textView.setText(Integer.toString(args.getInt(ARG_SECTION_NUMBER)));
             return textView;
         }
+    }
+    
+    public void playOrPauseTrack(View view) {
+    	Button button = (Button)findViewById(R.id.play_or_pause_button);
+		Intent playerIntent = new Intent(this, PlayerService.class);
+		
+		
+		
+    	if (((String)button.getTag()).equals(getString(R.string.button_play))) {
+    		playerIntent.setAction(PlayerService.ACTION_PLAY);
+    		button.setBackgroundResource(android.R.drawable.ic_media_pause);
+    		button.setTag(getString(R.string.button_pause));    		
+    	}
+    	else {
+    		playerIntent.setAction(PlayerService.ACTION_PAUSE);
+    		button.setBackgroundResource(android.R.drawable.ic_media_play);
+    		button.setTag(getString(R.string.button_play));
+    	}
+    	startService(playerIntent);
+    }
+    
+    public void nextTrack(View view) {
+    	System.out.println("Next track");
     }
 }

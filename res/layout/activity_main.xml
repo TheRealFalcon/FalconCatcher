@@ -1,12 +1,40 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity" >
-    <!--fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    	android:id="@+id/subscriptionsFragment"
-    	android:layout_width="match_parent"
-    	android:layout_height="match_parent" 
-    	class="com.falconware.falconcatcher.SubscriptionsFragment" / -->   	    
-</FrameLayout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    
+    <FrameLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        tools:context=".MainActivity" >
+    </FrameLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/main_audio_view"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal" >
+        
+
+        <Button
+            android:id="@+id/play_or_pause_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            android:background="@android:drawable/ic_media_play"
+            android:tag="@string/button_play"
+            android:onClick="playOrPauseTrack" />        
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            android:background="@android:drawable/ic_media_next" 
+            android:onClick="nextTrack" />
+    </LinearLayout>
+
+</LinearLayout>

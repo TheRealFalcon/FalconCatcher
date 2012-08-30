@@ -18,7 +18,7 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 
 	public SubscriptionsAdapter(Context context, Cursor cursor, Database db) {
 		super(context, cursor, R.layout.group_row, new String[] { "title" },
-				new int[] { R.id.row_name }, R.layout.child_row, new String[] {"title"}, 
+				new int[] { R.id.group_name }, R.layout.child_row, new String[] {"title"}, 
 				new int[] {R.id.grp_child});
 		mDb = db;
 	}
