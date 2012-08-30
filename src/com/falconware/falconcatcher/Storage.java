@@ -9,8 +9,8 @@ import android.net.Uri;
 public class Storage {
 	//private static final String APPLICATION_DIRECTORY = Environment.getExternalStorageDirectory().toString() + "/FalconCatcher/";
 	
-	public static long downloadEpisode(Context context, String feedTitle, String episodeTitle, String url) {
-		String downloadDirectory = new Database(context).getApplicationDirectory() + feedTitle + "/";
+	public static long downloadEpisode(Context context, String applicationDirectory, String feedTitle, String episodeTitle, String url) {
+		String downloadDirectory = applicationDirectory + feedTitle + "/";
 		File downloadDir = new File(downloadDirectory);
 		downloadDir.mkdirs();
 		DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));

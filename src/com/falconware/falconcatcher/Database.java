@@ -66,10 +66,12 @@ public class Database {
 	}
 	
 	public Database(Context context) {
-		
 		DictionaryOpenHelper helper = new DictionaryOpenHelper(context);
 		mDb = helper.getWritableDatabase();
-		
+	}
+	
+	public void close() {
+		mDb.close();
 	}
 	
 	public long addFeed(String url, String title, String imageUrl) {
@@ -126,7 +128,7 @@ public class Database {
 		statement.executeUpdateDelete();
 	}
 	
-	private byte[]  imageToBuffer(String imageUrl) {
+	private byte[] imageToBuffer(String imageUrl) {
 		try {
 			URL url = new URL(imageUrl);  //http://example.com/image.jpg
 			URLConnection con = url.openConnection();
@@ -146,20 +148,6 @@ public class Database {
 			return null;
 		}
 	}
-		
-	//And this is how you get the data back and convert it into a Bitmap:
-	//
-	////select the data
-	//Cursor cursor = db.query(TABLE_STATIONLIST, new String[] {TABLE_FIELD},
-//	                                              null, null, null, null, null);
-	////get it as a ByteArray
-	//byte[] imageByteArray=cursor.getBlob(1);
-	////the cursor is not needed anymore
-	//cursor.close();
-	//
-	////convert it back to an image
-	//ByteArrayInputStream imageStream = new ByteArrayInputStream(mybyte);
-	//Bitmap theImage = BitmapFactory.decodeStream(imageStream));
 
 	
 	public String getApplicationDirectory() {

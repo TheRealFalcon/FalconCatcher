@@ -7,20 +7,20 @@ import android.widget.Toast;
 
 public class DownloadFeedTask extends AsyncTask<String, Void, Boolean> {
 	private Activity mActivity;
-	//private Database mDb;
+	private Database mDb;
 	//private ExpandableListView mView;
 	
-	public DownloadFeedTask(Activity context) {
+	public DownloadFeedTask(Activity context, Database db) {
 		//System.out.println("DownloadFeedTask ctor");
 		mActivity = context;
-		//mDb = db;
+		mDb = db;
 		//mView = view;
 	}
 
 	@Override
 	protected Boolean doInBackground(String... url) {
 		try {
-			new FeedParser(url[0], mActivity);
+			new FeedParser(url[0], mActivity, mDb);
 		} catch (Exception e) { //TODO: Don't catch top level Exception
 			e.printStackTrace();
 			mActivity.runOnUiThread(new Runnable() {
@@ -44,11 +44,11 @@ public class DownloadFeedTask extends AsyncTask<String, Void, Boolean> {
 				return;
 			}
 			SubscriptionsAdapter adapter = (SubscriptionsAdapter)view.getExpandableListAdapter();
-			adapter.setGroupCursor(new Database(mActivity).getSubscriptions());
+			adapter.setGroupCursor(mDb.getSubscriptions());
 			adapter.notifyDataSetChanged();
 		}
-		else {
-			Toast.makeText(mActivity, "Can't parse feed", Toast.LENGTH_SHORT).show();
-		}
+//		else {
+//			Toast.makeText(mActivity, "Can't parse feed", Toast.LENGTH_SHORT).show();
+//		}
 	}
 }

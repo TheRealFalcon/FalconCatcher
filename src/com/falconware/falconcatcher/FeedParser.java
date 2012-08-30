@@ -16,11 +16,11 @@ public class FeedParser {
 	private Database mDb;
 	private XmlPullParser mParser;
 	
-	public FeedParser(String urlString, Context context) throws XmlPullParserException, IOException
+	public FeedParser(String urlString, Context context, Database db) throws XmlPullParserException, IOException
 	{
 		mFeedUrl = urlString;
 		mTitle = "";
-		mDb = new Database(context);
+		mDb = db;
 		mParser = Xml.newPullParser();
 		mParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 		try {

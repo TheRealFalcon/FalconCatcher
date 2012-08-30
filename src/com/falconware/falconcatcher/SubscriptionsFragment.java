@@ -72,7 +72,7 @@ public class SubscriptionsFragment extends Fragment {
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
 			String url = cursor.getString(cursor.getColumnIndex("url"));
-			long downloadId = Storage.downloadEpisode(mActivity, feedTitle, episodeTitle, url);
+			long downloadId = Storage.downloadEpisode(mActivity, mDb.getApplicationDirectory(), feedTitle, episodeTitle, url);
 			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
@@ -82,7 +82,6 @@ public class SubscriptionsFragment extends Fragment {
 			//adapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
-			System.out.println(mDb.getApplicationDirectory());
 			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
@@ -92,56 +91,19 @@ public class SubscriptionsFragment extends Fragment {
 			Button button = (Button)mActivity.findViewById(R.id.play_or_pause_button);
 			button.setBackgroundResource(android.R.drawable.ic_media_pause);
 			button.setTag(getString(R.string.button_pause));
+			
 			Intent playerIntent = new Intent(mActivity, PlayerService.class);
 			playerIntent.setAction(PlayerService.ACTION_PLAY);
-			//Bundle extras = playerIntent.getExtras();
-			//extras.putString("filename", filename);
 			playerIntent.putExtra("filename", filename);
 			mActivity.startService(playerIntent);	
 		}
 		return super.onContextItemSelected(item);
 	}
 	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		mDb.close();
+	}
+	
 }
-
-
-//		SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
-//				getActivity(), 
-//				createGroupList(), 
-//				R.layout.group_row, 
-//				new String[] { "Group Item", "hello" }, 
-//				new int[] { R.id.row_name }, 
-//				createChildList(), 
-//				R.layout.child_row, 
-//				new String[] {"Sub Item"}, 
-//				new int[] {R.id.grp_child});
-				
-
-//	}
-
-//	private List<HashMap<String,String> > createGroupList() {
-//		List<HashMap<String,String> > result = new ArrayList<HashMap<String,String> >();
-//		for( int i = 0 ; i < 15 ; ++i ) { // 15 groups........
-//			HashMap<String, String> m = new HashMap<String, String>();
-//			m.put( "Group Item","Group Item " + i ); // the key and it's value.
-//			result.add( m );
-//		}
-//		return result;
-//	}
-//
-//	private List<List<HashMap<String,String> > > createChildList() {
-//
-//		List<List<HashMap<String,String> > > result = new ArrayList<List<HashMap<String,String> > >();
-//		for( int i = 0 ; i < 15 ; ++i ) { // this -15 is the number of groups(Here it's fifteen)
-//			/* each group need each HashMap-Here for each group we have 3 subgroups */
-//			List<HashMap<String,String> > secList = new ArrayList<HashMap<String,String> >();
-//			for( int n = 0 ; n < 3 ; n++ ) {
-//				HashMap<String,String> child = new HashMap<String,String>();
-//				child.put( "Sub Item", "Sub Item " + n );
-//				secList.add( child );
-//			}
-//			result.add( secList );
-//		}
-//		return result;
-//	}
-//}

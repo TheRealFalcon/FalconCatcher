@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -16,11 +17,9 @@ public class PlayerService extends Service {
 	public static final String ACTION_PLAY = "com.falconware.action.PLAY";
 	public static final String ACTION_PAUSE = "com.falconware.action.PAUSE";
 	private static final int NOTIFICATION_ID = 1;
-	private MediaPlayer mPlayer;
+	private final IBinder mBinder = new LocalBinder();
 	
-    public PlayerService() {
-    	super();		
-    }
+	private MediaPlayer mPlayer;
     
     @Override
     public void onCreate() {
@@ -31,8 +30,7 @@ public class PlayerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return mBinder;
     }
     
     @Override
@@ -103,5 +101,11 @@ public class PlayerService extends Service {
 	@Override
 	public void onDestroy() {
 		//do something
+	}
+	
+	public class LocalBinder extends Binder {
+		PlayerService getService() {
+			return PlayerService.this;
+		}
 	}
 }
