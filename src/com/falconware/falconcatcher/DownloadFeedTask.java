@@ -20,7 +20,7 @@ public class DownloadFeedTask extends AsyncTask<String, Void, Boolean> {
 	@Override
 	protected Boolean doInBackground(String... url) {
 		try {
-			new FeedParser(url[0], mActivity, mDb);
+			new LocalParser(url[0], mActivity, mDb);
 		} catch (Exception e) { //TODO: Don't catch top level Exception
 			e.printStackTrace();
 			mActivity.runOnUiThread(new Runnable() {

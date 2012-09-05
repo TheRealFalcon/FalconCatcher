@@ -1,5 +1,7 @@
 package com.falconware.falconcatcher;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,13 +12,13 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Context;
 import android.util.Xml;
 
-public class FeedParser {
+public class LocalParser {
 	private String mFeedUrl;
 	private String mTitle;
 	private Database mDb;
 	private XmlPullParser mParser;
 	
-	public FeedParser(String urlString, Context context, Database db) throws XmlPullParserException, IOException
+	public LocalParser(String urlString, Context context, Database db) throws XmlPullParserException, IOException
 	{
 		mFeedUrl = urlString;
 		mTitle = "";
@@ -24,9 +26,10 @@ public class FeedParser {
 		mParser = Xml.newPullParser();
 		mParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 		try {
-			URL url = new URL(urlString);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
+			//URL url = new URL(urlString);
+			//HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			//BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(new File(urlString)));
 			mParser.setInput(in, null);
 		} catch (XmlPullParserException e) {
 			e.printStackTrace();

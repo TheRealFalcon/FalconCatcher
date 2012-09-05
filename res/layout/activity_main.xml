@@ -17,23 +17,37 @@
         android:id="@+id/main_audio_view"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:orientation="horizontal" >
+        android:orientation="horizontal" 
+        android:gravity="right">
         
-
-        <Button
+        <ImageButton
+            android:id="@+id/rewind_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            android:src="@android:drawable/ic_media_rew"
+            android:onClick="rewindTrack" />  
+        <ImageButton
             android:id="@+id/play_or_pause_button"
             android:layout_width="50dp"
             android:layout_height="50dp" 
             android:layout_margin="5dp"
-            android:background="@android:drawable/ic_media_play"
+            android:src="@android:drawable/ic_media_play"
             android:tag="@string/button_play"
-            android:onClick="playOrPauseTrack" />        
-        <Button
+            android:onClick="playOrPauseTrack" />
+        <ImageButton
+            android:id="@+id/fast_forward_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            android:src="@android:drawable/ic_media_ff"
+            android:onClick="fastForwardTrack" />    
+        <ImageButton
             android:id="@+id/next_button"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_margin="5dp"
-            android:background="@android:drawable/ic_media_next" 
+            android:src="@android:drawable/ic_media_next" 
             android:onClick="nextTrack" />
     </LinearLayout>
 

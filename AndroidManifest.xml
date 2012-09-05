@@ -29,6 +29,16 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+
+        <activity
+            android:name=".AddFeedActivity"
+            android:label="@string/title_activity_add_feed" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
