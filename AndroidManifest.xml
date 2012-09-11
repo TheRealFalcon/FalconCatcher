@@ -33,11 +33,8 @@
         <activity
             android:name=".AddFeedActivity"
             android:label="@string/title_activity_add_feed" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        </activity>
+        <activity android:name=".GoogleSelectionActivity" >
         </activity>
     </application>
 

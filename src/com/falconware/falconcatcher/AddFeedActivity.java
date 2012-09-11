@@ -1,13 +1,26 @@
 package com.falconware.falconcatcher;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 
 public class AddFeedActivity extends Activity {
 
@@ -52,8 +65,15 @@ public class AddFeedActivity extends Activity {
     }
     
     public void onGooglePressed(View view) {
-    	//http://www.google.com/reader/api/0/subscription/list
-    	//JSONObject object = (JSONObject)new JSONTokener("");
+    	
+    	//ListView newView = new ListView(this);
+    	//ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+    	//newView.setAdapter(adapter);
+    	Intent intent = new Intent(this, GoogleSelectionActivity.class);
+    	//intent.putExtra("categories", categories);
+    	startActivity(intent);
+    	//newView.set
     	
     }
+    
 }

@@ -1,0 +1,8 @@
+The following filenames in these subdirectories are taken from the Silk icon set:
+folder.png
+
+These icons can be found at:
+http://www.famfamfam.com/lab/icons/silk/
+
+They are licensed under the Creative Commons Attribution 2.5 License.  License text can be found here:
+http://creativecommons.org/licenses/by/2.5/
