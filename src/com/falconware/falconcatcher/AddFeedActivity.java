@@ -1,26 +1,15 @@
 package com.falconware.falconcatcher;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Scanner;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 
 public class AddFeedActivity extends Activity {
 
@@ -36,11 +25,12 @@ public class AddFeedActivity extends Activity {
         return true;
     }
     
-    public void onSearchPressed(View view) {
+    
+	public void onSearchPressed(View view) {
     	Database db = new Database(this);
     	EditText text = (EditText)findViewById(R.id.text_add_dialog);
-    	System.out.println(text.getText().toString());
-    	new DownloadFeedTask(this, db).execute(text.getText().toString());
+    	String url = text.getText().toString();
+    	new DownloadFeedTask(this, db).addFeeds(new Pair<String,String>(url, url));
     	//final View layout = View.inflate(this, R.layout.add_subscription_popup, null);
     	//final Activity activity = this;
     	//AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -70,7 +60,9 @@ public class AddFeedActivity extends Activity {
     	//ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
     	//newView.setAdapter(adapter);
     	Intent intent = new Intent(this, GoogleSelectionActivity.class);
-    	//intent.putExtra("categories", categories);
+    	ArrayList<Map<String,String> > entryList = new ReaderParser().parseReader();
+    	intent.putExtra("entryList", entryList);
+    	intent.putExtra("useCategories", true);
     	startActivity(intent);
     	//newView.set
     	

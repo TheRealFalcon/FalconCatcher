@@ -1,4 +1,7 @@
 package com.falconware.falconcatcher;
+
+//http://www.google.com/reader/atom/feed/http://www.etc
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,10 +29,12 @@ public class LocalParser {
 		mParser = Xml.newPullParser();
 		mParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 		try {
-			//URL url = new URL(urlString);
-			//HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			//BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
-			BufferedInputStream in = new BufferedInputStream(new FileInputStream(new File(urlString)));
+			//FOR TESTING, COMMENT THE NEXT THREE LINES AND UNCOMMENT THE FOURTH
+			URL url = new URL(urlString);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
+			//BufferedInputStream in = new BufferedInputStream(new FileInputStream(new File(urlString)));
+			
 			mParser.setInput(in, null);
 		} catch (XmlPullParserException e) {
 			e.printStackTrace();

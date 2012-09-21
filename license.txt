@@ -1,4 +1,4 @@
-The following filenames in these subdirectories are taken from the Silk icon set:
+The following filenames in the layout subdirectories are taken from the Silk icon set:
 folder.png
 
 These icons can be found at:

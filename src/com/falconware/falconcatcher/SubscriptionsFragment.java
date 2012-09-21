@@ -19,7 +19,7 @@ import android.widget.ExpandableListView;
 public class SubscriptionsFragment extends Fragment {
 	private int mSelectedGroupRow;
 	private int mSelectedChildRow;
-	private SubscriptionsAdapter adapter;
+	private SubscriptionsAdapter mAdapter;
 	private Database mDb;
 	private Activity mActivity;
 	
@@ -33,16 +33,23 @@ public class SubscriptionsFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		ExpandableListView view = (ExpandableListView)inflater.inflate(R.layout.subscriptions, container, false);
+		ExpandableListView view = (ExpandableListView)inflater.inflate(android.R.layout.expandable_list_content, container, false);
 		registerForContextMenu(view);
 		
 		//Activity currentActivity = mActivity;
-		adapter = new SubscriptionsAdapter(mActivity.getApplicationContext(), 
+		mAdapter = new SubscriptionsAdapter(mActivity.getApplicationContext(), 
 				mDb.getSubscriptions(), mDb);
-		view.setAdapter(adapter);
+		view.setAdapter(mAdapter);
 
 		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
 		return view;
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		//mAdapter.notifyDataSetChanged(true);
+		mAdapter.setGroupCursor(mDb.getSubscriptions());
 	}
 	
 	@Override
@@ -68,7 +75,7 @@ public class SubscriptionsFragment extends Fragment {
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
-			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			Cursor cursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
 			String url = cursor.getString(cursor.getColumnIndex("url"));
@@ -76,13 +83,13 @@ public class SubscriptionsFragment extends Fragment {
 			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
-			Cursor cursor = adapter.getGroup(mSelectedGroupRow);
+			Cursor cursor = mAdapter.getGroup(mSelectedGroupRow);
 			mDb.removeFeed(cursor.getString(cursor.getColumnIndex("title")));
-			adapter.setGroupCursor(mDb.getSubscriptions());
+			mAdapter.setGroupCursor(mDb.getSubscriptions());
 			//adapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
-			Cursor cursor = adapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			Cursor cursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
 			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
 			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");

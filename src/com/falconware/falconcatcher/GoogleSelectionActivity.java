@@ -1,110 +1,262 @@
 package com.falconware.falconcatcher;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeSet;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
+import android.view.ActionMode;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 
 public class GoogleSelectionActivity extends Activity {
+	private ActionMode mActionMode;
+	private Database mDb;
+	private ListView mView;
+	
+	public void getUserCredentials() {
+		AccountManager manager = AccountManager.get(this);
+		Account[] accounts = manager.getAccounts();
+		Account account = accounts[0];
+		//manager.getAuthToken(...);
+		
+		//manager.getAccountsByType(type);
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		ListView view = new ListView(this);
-		//String[] categories = getIntent().getStringArrayExtra("categories");
-		//ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, categories);
-		//view.setAdapter(adapter);
-		//setContentView(view);
 		
+		getUserCredentials();
+		
+		mActionMode = null;
+		mDb = new Database(this);
+		//ListView view = getListView();
+		mView = new ListView(this);
+		mView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);		
 		
 		//http://www.google.com/reader/api/0/subscription/list?output=json
-    	List<Map<String,String> > entryList = parseReader();
-    	Set<String> categorySet = new TreeSet<String>();
-    	List<String> noCategoryList = new LinkedList<String>();
+    	//List<Map<String,String> > entryList = parseReader();
+		final List<Map<String,String> > entryList = (ArrayList<Map<String,String> >)getIntent().getSerializableExtra("entryList");
+    	GoogleAdapter adapter = new GoogleAdapter(getIntent().getBooleanExtra("useCategories", false));
+    	
     	for (Map<String,String> entry : entryList) {
-    		String category = entry.get("category");
-    		if (category.isEmpty()) {
-    			noCategoryList.add(entry.get("title"));
-    		}
-    		else {
-    			categorySet.add(category);
-    		}
-    	}
-    	Collections.sort(noCategoryList);
+    		adapter.addEntry(entry);
+    	}    	
     	
-    	List<Map<String,String> > displayList = new LinkedList<Map<String,String> >();
-    	for (String category : categorySet) {
-    		Map<String,String> entryMap = new HashMap<String,String>();
-    		entryMap.put("display", category);
-    		displayList.add(entryMap);
-    	}
-    	for (String entry : noCategoryList) {
-    		Map<String,String> entryMap = new HashMap<String,String>();
-    		entryMap.put("display", entry);
-    		displayList.add(entryMap);
-    	}
-    	SimpleAdapter adapter = new SimpleAdapter(this, displayList, R.layout.google_selection_dialog, new String[] {"display"}, new int[] {R.id.google_folder_view});
-    	view.setAdapter(adapter);
-    	System.out.println("hi");
-    	setContentView(view);
-    	
+    	mView.setAdapter(adapter);
+    	mView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				GoogleAdapter adapter = ((GoogleAdapter)mView.getAdapter());
+				if (adapter.isCategory(position)) {
+					String category = (String)adapter.getItem(position);
+					mView.setItemChecked(position, false);
+					Intent intent = new Intent(GoogleSelectionActivity.this, GoogleSelectionActivity.class);
+					ArrayList<Map<String,String> > newEntryList = new ArrayList<Map<String,String> >();
+					for (Map<String,String> entry : entryList) {
+						if (entry.get("category").equals(category)) {
+							newEntryList.add(entry);
+						}
+					}
+					intent.putExtra("entryList", newEntryList);
+					startActivity(intent);
+					return;
+				}
+				int checkedCount = mView.getCheckedItemCount();
+				if (checkedCount > 0) {
+					if (mActionMode == null) {
+						mActionMode = startActionMode(new ModeCallback());
+						
+					}
+					
+					switch (checkedCount) {
+					case 1:
+						mActionMode.setTitle("1 selected");
+						break;
+					default:
+						mActionMode.setTitle("" + checkedCount + " selected");
+						break;
+					}
+				}
+				
+				else {
+					mActionMode.finish();
+					//mActionMode = null;
+				}
+			}
+		});
+    	setContentView(mView);
 	}
 	
-	private List<Map<String,String> > parseReader() {
-		String readerJson = "";
-    	try {
-    		Scanner scanner = new Scanner(new FileInputStream("/mnt/sdcard/download/testFeeds/readerList.json"));
-    		StringBuilder builder = new StringBuilder();
-    		while (scanner.hasNext()) {
-    			builder.append(scanner.next());
-    		}
-    		readerJson = builder.toString();
-    	} catch (FileNotFoundException e) {
-    		e.printStackTrace();
-    		finish();
-    	}
-    	
-    	try {
-    		JSONObject object = (JSONObject)new JSONTokener(readerJson).nextValue();
-    		JSONArray subscriptions = object.getJSONArray("subscriptions");
-    		List<Map<String,String> > entryList = new LinkedList<Map<String, String> >();
-    		for (int index=0; index<subscriptions.length(); index++) {
-    			Map<String,String> entry = new HashMap<String,String>();
-    			JSONObject jsonEntry = subscriptions.getJSONObject(index);
-    			entry.put("id", jsonEntry.getString("id").substring(5));  //clear the starting "feed/"
-    			String entryTitle = jsonEntry.getString("title");
-    			entry.put("title", entryTitle);
-    			JSONObject categoryArray = jsonEntry.getJSONArray("categories").optJSONObject(0);
-    			String category = "";
-    			if (categoryArray != null) {
-    				category = categoryArray.getString("label");
-    			}
-    			entry.put("category", category);
-    			entryList.add(entry);    			
-    		}
-    		return entryList;
-    		
-    	} catch (JSONException e) {
-    		e.printStackTrace();
-    		finish();
-    	} 
-    	return null;
+
+	
+	private class GoogleAdapter extends BaseAdapter {
+		private List<String> mCategories;
+		private List<Map<String,String> > mEntries;
+		private LayoutInflater mInflater;
+		private boolean mUseCategories;
+		
+		public GoogleAdapter(boolean useCategories) {
+			mCategories = new LinkedList<String>();
+			mEntries = new ArrayList<Map<String,String> >();
+			mInflater = getLayoutInflater();
+			mUseCategories = useCategories;
+		}
+		
+		public void addEntry(Map<String,String> entry) {
+			//mEntries.add(entry);
+			if (mUseCategories) {
+				String category = entry.get("category");
+				if (!category.isEmpty()) {
+					addCategory(entry.get("category"));
+				}
+				else {
+					mEntries.add(entry);
+				}
+			}
+			else {
+				mEntries.add(entry);
+			}
+		}
+		
+		private void addCategory(String category) {
+			if (mCategories.contains(category)) {
+				return;
+			}			
+			mCategories.add(category);
+			//TODO: This is probably really inefficient...
+			Collections.sort(mCategories);
+		}
+		
+		public boolean isCategory(int position) {
+			return position < mCategories.size();
+		}
+		
+		public boolean isEntry(int position) {
+			return position >= mCategories.size();
+		}
+
+		@Override
+		public int getCount() {
+			return mCategories.size() + mEntries.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			if (position < mCategories.size()) {
+				return mCategories.get(position);
+			}
+			return mEntries.get(position-mCategories.size());
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+		
+		@Override
+		public boolean hasStableIds() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View view = null;
+			if (position < mCategories.size()) {
+				//Its a category
+				String currentItem = (String)getItem(position);
+				view = mInflater.inflate(R.layout.folder_list_item, null);
+				TextView textView = (TextView)view.findViewById(R.id.list_item_text);
+				textView.setText(currentItem);
+			}
+			else {
+				//Its an entry
+				@SuppressWarnings("unchecked")  //Thats right
+				Map<String,String> currentItem = (Map<String,String>)getItem(position);
+				view = mInflater.inflate(R.layout.entry_list_item, null);
+				TextView textView = (TextView)view.findViewById(R.id.list_item_text);
+				textView.setText(currentItem.get("title"));
+			}
+			return view;
+		}		
 	}
+	
+	   private class ModeCallback implements ListView.MultiChoiceModeListener {
+
+	        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+	            MenuInflater inflater = getMenuInflater();
+	            inflater.inflate(R.menu.google_import_menu, menu);
+	            mode.setTitle("Select Items");
+	            return true;
+	        }
+
+	        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+	            return true;
+	        }
+
+	        @SuppressWarnings("unchecked")
+			public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+//	            switch (item.getItemId()) {
+//	            case R.id.share:
+//	                Toast.makeText(List16.this, "Shared " + getListView().getCheckedItemCount() +
+//	                        " items", Toast.LENGTH_SHORT).show();
+//	                mode.finish();
+//	                break;
+//	            default:
+//	                Toast.makeText(List16.this, "Clicked " + item.getTitle(),
+//	                        Toast.LENGTH_SHORT).show();
+//	                break;
+//	            }
+	        	ListView view = mView;
+	        	List<Pair<String,String> > nameUrlPairs = new LinkedList<Pair<String,String> >();
+	        	for (long id : view.getCheckedItemIds()) {
+	        		@SuppressWarnings("unchecked")
+					Map<String,String> entry = (Map<String,String>)((GoogleAdapter)view.getAdapter()).getItem((int)id);
+	        		nameUrlPairs.add(new Pair<String,String>(entry.get("title"), entry.get("id")));	        			        		
+	        	}
+	        	//new DownloadFeedTask(getParent(), mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
+	        	new DownloadFeedTask(GoogleSelectionActivity.this, mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
+
+	        	//GoogleSelectionActivity.this.setContentView(R.layout.import_dialog);
+	        	mode.finish();
+	            return true;
+	        }
+	        
+	        
+
+	        public void onDestroyActionMode(ActionMode mode) {
+	        	ListView view = mView;
+	        	view.clearChoices();
+	        	((GoogleAdapter)view.getAdapter()).notifyDataSetChanged();
+	        	mActionMode = null;
+	        }
+
+	        public void onItemCheckedStateChanged(ActionMode mode,
+	                int position, long id, boolean checked) {
+	        	//Not getting called
+	        	return;
+	        }
+	        
+	    }
 }

@@ -24,14 +24,18 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 			@Override
 			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 				if (view instanceof ImageView) {
-					byte[] imageByteArray=cursor.getBlob(columnIndex);
-					//the cursor is not needed anymore
-					//cursor.close();
+					try {
+						byte[] imageByteArray=cursor.getBlob(columnIndex);
+						//the cursor is not needed anymore
+						//cursor.close();
 
-					//convert it back to an image
-					ByteArrayInputStream imageStream = new ByteArrayInputStream(imageByteArray);
-					Bitmap theImage = BitmapFactory.decodeStream(imageStream);
-					((ImageView)view).setImageBitmap(theImage);
+						//convert it back to an image
+						ByteArrayInputStream imageStream = new ByteArrayInputStream(imageByteArray);
+						Bitmap theImage = BitmapFactory.decodeStream(imageStream);
+						((ImageView)view).setImageBitmap(theImage);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					return true;
 				}
 				return false;

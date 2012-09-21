@@ -1,5 +1,27 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="AppTheme" parent="android:Theme.Light" />
+    <style name="AppTheme" parent="android:Theme.Holo">
+        <item name="android:actionModeCloseDrawable">@android:drawable/ic_menu_close_clear_cancel</item>
+    </style>
+    
+    <style name="ListViews" parent="android:Widget.Holo.ListView">
+        <item name="android:layout_height">fill_parent</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingLeft">?android:attr/listPreferredItemPaddingLeft</item>
+        <item name="android:paddingRight">?android:attr/listPreferredItemPaddingRight</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceListItemSmall</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    
+<!--     <style name="ActionMode"> -->
+<!--         <item name="android:background">?android:attr/actionModeBackground</item> -->
+<!--         <item name="android:backgroundSplit">?android:attr/actionModeSplitBackground</item> -->
+<!--         <item name="android:height">?android:attr/actionBarSize</item> -->
+<!--         <item name="android:titleTextStyle">@android:style/TextAppearance.Widget.ActionMode.Title</item> -->
+<!--         <item name="android:subtitleTextStyle">@android:style/TextAppearance.Widget.ActionMode.Subtitle</item> -->
+<!--         <item name="actionModeCloseDrawable">@drawable/ic_launcher</item> -->
+<!--     </style> -->
 
 </resources>

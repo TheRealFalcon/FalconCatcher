@@ -6,9 +6,9 @@
  
     <TextView android:id="@+id/grp_child"
          android:focusable="false"
-         android:textStyle="normal"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"/>
+         style="@style/ListViews"
+         android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+         />
     
     <!-- 
     android:paddingLeft="50px"

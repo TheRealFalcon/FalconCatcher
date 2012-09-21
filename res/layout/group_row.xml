@@ -6,17 +6,28 @@
     
     <ImageView android:id="@+id/group_image"
         android:contentDescription="Image for feed"
-        android:layout_width="80dp"
-        android:layout_height="50dp"
-        android:paddingLeft="30dp"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:gravity="center_vertical"
+        android:layout_width="100dp"
+
         android:scaleType="fitXY"
         android:paddingTop="0dp"
         android:paddingBottom="0dp"/>
+    
+<!--         android:layout_height="50dp" -->
+<!--         android:paddingLeft="30dp" -->
  
     <TextView android:id="@+id/group_name"
-         android:layout_width="wrap_content"
-         android:layout_height="match_parent"
+        style="@style/ListViews"
+        
           />
+<!--          android:layout_width="wrap_content" -->
+<!--          android:layout_height="match_parent" -->
+    
+    
+    
     <!-- 
              android:textColor="@drawable/blue"
          android:textStyle="normal"
