@@ -38,7 +38,7 @@ public class SubscriptionsFragment extends Fragment {
 		
 		//Activity currentActivity = mActivity;
 		mAdapter = new SubscriptionsAdapter(mActivity.getApplicationContext(), 
-				mDb.getSubscriptions(), mDb);
+				mDb.getFeeds(), mDb);
 		view.setAdapter(mAdapter);
 
 		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
@@ -49,7 +49,7 @@ public class SubscriptionsFragment extends Fragment {
 	public void onResume() {
 		super.onResume();
 		//mAdapter.notifyDataSetChanged(true);
-		mAdapter.setGroupCursor(mDb.getSubscriptions());
+		mAdapter.setGroupCursor(mDb.getFeeds());
 	}
 	
 	@Override
@@ -84,14 +84,17 @@ public class SubscriptionsFragment extends Fragment {
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = mAdapter.getGroup(mSelectedGroupRow);
-			mDb.removeFeed(cursor.getString(cursor.getColumnIndex("title")));
-			mAdapter.setGroupCursor(mDb.getSubscriptions());
-			//adapter.notifyDataSetChanged();
+			mDb.removeFeed(cursor.getString(cursor.getColumnIndex(Database.TableFeed.ID)));
+			mAdapter.setGroupCursor(mDb.getFeeds());
+			mAdapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
-			Cursor cursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
-			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
+			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
+			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
+			Cursor feedCursor = mDb.getFeed(feedId);
+			String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.TITLE));
+			
 			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");
 			String filename = mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
 			

@@ -3,11 +3,13 @@ package com.falconware.falconcatcher;
 //http://www.google.com/reader/atom/feed/http://www.etc
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -16,15 +18,15 @@ import android.content.Context;
 import android.util.Xml;
 
 public class LocalParser {
-	private String mFeedUrl;
-	private String mTitle;
+	//private String mFeedUrl;
+	//private String mTitle;
 	private Database mDb;
 	private XmlPullParser mParser;
 	
 	public LocalParser(String urlString, Context context, Database db) throws XmlPullParserException, IOException
 	{
-		mFeedUrl = urlString;
-		mTitle = "";
+		//mFeedUrl = urlString;
+		//mTitle = "";
 		mDb = db;
 		mParser = Xml.newPullParser();
 		mParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -43,17 +45,17 @@ public class LocalParser {
 			e.printStackTrace();
 			throw e;
 		}
-		readFeed();
+		readFeed(urlString);
 	}
 	
-	public void readFeed() throws XmlPullParserException, IOException {
+	public void readFeed(String feedUrl) throws XmlPullParserException, IOException {
 		int eventType = mParser.getEventType();
 		long time1 = System.currentTimeMillis();
 		while (eventType != XmlPullParser.END_DOCUMENT) {
 			if (eventType == XmlPullParser.START_TAG) {
 				//System.out.println("Start Tag: " + parser.getName());
 				if (mParser.getName().equals("channel")) {
-					parseChannel();
+					parseChannel(feedUrl);
 				}				
 			}
 			else if (eventType == XmlPullParser.END_TAG) {
@@ -68,58 +70,71 @@ public class LocalParser {
 		System.out.println("Time: " + (time2-time1));
 	}
 	
-	private void parseChannel() throws XmlPullParserException, IOException {
+	private void parseChannel(String feedUrl) throws XmlPullParserException, IOException {
 		//System.out.println("In parse channel");
 		int eventType = mParser.next();
 		//When getText() returns non-null, getName() returns null
 		String imageUrl = "";
+		String title = "";
+		List<Map<String,String> > episodeList = new LinkedList<Map<String,String> >();
 		while (eventType != XmlPullParser.END_TAG || !mParser.getName().equals("channel")) {
 			if (eventType == XmlPullParser.START_TAG) {
 				//System.out.println("Start Tag: " + parser.getName());
 				String tagName = mParser.getName();
 				if (tagName.equals("title")) {
-					mTitle = mParser.nextText();
+					title = mParser.nextText();
 				}
 				else if (tagName.equals("itunes:image")) {
 					imageUrl = getAttribute("href");
 				}
 				else if (tagName.equals("item")) {
-					parseItem();
+					episodeList.add(getItem());
 				}
 			}
 			eventType = mParser.next();
 		}
-		mDb.addFeed(mFeedUrl, mTitle, imageUrl);
+		long feedId = mDb.addFeed(feedUrl, title, imageUrl);
+		for (Map<String,String> episode : episodeList) {
+			mDb.addEpisode(feedId, episode.get(Database.TableEpisode.URL), episode.get(Database.TableEpisode.TITLE), 
+					episode.get(Database.TableEpisode.DESCRIPTION), episode.get(Database.TableEpisode.AUTHOR), 
+					episode.get(Database.TableEpisode.PUBLISHED_DATE));
+		}
 		
 	}
 	
-	private void parseItem() throws XmlPullParserException, IOException {
+	private Map<String,String> getItem() throws XmlPullParserException, IOException {
 		//System.out.println("In parse item");
-		int eventType = mParser.next();
-		
+		int eventType = mParser.next();		
 		String episodeUrl = "";
 		String title = "";
 		String description = "";
 		String author = "";
 		String pubDate = "";
 		
+		Map<String,String> item = new HashMap<String,String>();
+		
 		while (eventType != XmlPullParser.END_TAG || !mParser.getName().equals("item")) {
 			if (eventType == XmlPullParser.START_TAG) {
 				String tagName = mParser.getName();
 				if (tagName.equals("media:content")) {
 					episodeUrl = getAttribute("url");
+					item.put(Database.TableEpisode.URL, episodeUrl);
 				}
 				else if (tagName.equals("title")) {
 					title = mParser.nextText();
+					item.put(Database.TableEpisode.TITLE, title);
 				}
 				else if (tagName.equals("description")) {
 					description = mParser.nextText();
+					item.put(Database.TableEpisode.DESCRIPTION, description);
 				}
 				else if (tagName.equals("itunes:author")) {
 					author = mParser.nextText();
+					item.put(Database.TableEpisode.AUTHOR, author);
 				}
 				else if (tagName.equals("pubDate")) {
 					pubDate = mParser.nextText(); 
+					item.put(Database.TableEpisode.PUBLISHED_DATE, pubDate);
 				}
 				//System.out.println("Start Tag: " + parser.getName());
 			}
@@ -128,7 +143,8 @@ public class LocalParser {
 			}
 			eventType = mParser.next();
 		}
-		mDb.addEpisode(mTitle, episodeUrl, title, description, author, pubDate);
+		//mDb.addEpisode(feedId, episodeUrl, title, description, author, pubDate);
+		return item;
 	}
 	
 	private String getAttribute(String attribute) {

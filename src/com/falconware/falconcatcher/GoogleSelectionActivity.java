@@ -31,21 +31,14 @@ public class GoogleSelectionActivity extends Activity {
 	private Database mDb;
 	private ListView mView;
 	
-	public void getUserCredentials() {
-		AccountManager manager = AccountManager.get(this);
-		Account[] accounts = manager.getAccounts();
-		Account account = accounts[0];
-		//manager.getAuthToken(...);
-		
-		//manager.getAccountsByType(type);
-	}
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		
-		getUserCredentials();
+		//getUserCredentials();
 		
 		mActionMode = null;
 		mDb = new Database(this);

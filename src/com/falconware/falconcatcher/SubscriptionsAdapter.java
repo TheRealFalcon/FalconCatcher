@@ -19,22 +19,18 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 				new int[] { R.id.group_image, R.id.group_name }, R.layout.child_row, new String[] {"title"}, 
 				new int[] {R.id.grp_child});
 		mDb = db;
-		setViewBinder(new ViewBinder() {
-			
+		setViewBinder(new ViewBinder() {			
 			@Override
 			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 				if (view instanceof ImageView) {
-					try {
-						byte[] imageByteArray=cursor.getBlob(columnIndex);
-						//the cursor is not needed anymore
-						//cursor.close();
-
-						//convert it back to an image
+					byte[] imageByteArray=cursor.getBlob(columnIndex);
+					if (imageByteArray != null) {
 						ByteArrayInputStream imageStream = new ByteArrayInputStream(imageByteArray);
 						Bitmap theImage = BitmapFactory.decodeStream(imageStream);
 						((ImageView)view).setImageBitmap(theImage);
-					} catch (Exception e) {
-						e.printStackTrace();
+					}
+					else {
+						((ImageView)view).setImageResource(R.drawable.feed_icon_28x28);
 					}
 					return true;
 				}
@@ -44,7 +40,7 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 	}
 	@Override
 	protected Cursor getChildrenCursor(Cursor groupCursor) {
-		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex("title")));
+		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex(Database.TableFeed.ID)));
 	}
 
 }

@@ -35,21 +35,22 @@ public class PlayerService extends Service {
     
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+    	final int id = startId;
     	new AsyncTask<Intent, Void, Void>() {
 
 			@Override
 			protected Void doInBackground(Intent... intents) {
 				Intent intent = intents[0];
-				handleIntent(intent);
+				handleIntent(intent, id);
 				return null;
 			}
 		}.execute(intent);
-    	return START_STICKY;
+    	return START_NOT_STICKY;
     }
 
 	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
-	protected void handleIntent(Intent intent) {
+	protected void handleIntent(Intent intent, int id) {
 		String intentAction = intent.getAction();
 		if (intentAction.equals(ACTION_PLAY)) {
 			Notification notification;
@@ -94,6 +95,7 @@ public class PlayerService extends Service {
 		}
 		else if (intentAction.equals(ACTION_PAUSE)) {
 			mPlayer.pause();
+			stopSelf(id);
 		}
 		
 	}

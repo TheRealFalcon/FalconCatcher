@@ -6,6 +6,7 @@ import java.net.URLConnection;
 
 import org.apache.http.util.ByteArrayBuffer;
 
+import android.accounts.AccountManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -17,6 +18,65 @@ import android.os.Environment;
 
 
 public class Database {
+	public class TableSettings {
+		private TableSettings() {}
+		public static final String TABLE_NAME="settings";
+		public static final String KEY="key";
+		public static final String VALUE="value";
+		public static final String APPLICATION_DIRECTORY="applicationDirectory";
+	}
+	
+	public class TableFeed {
+		private TableFeed() {}
+		public static final String TABLE_NAME="feed";
+		public static final String ID="_id";
+		public static final String URL="url";
+		public static final String TITLE="title";
+		public static final String IMAGE="image";
+	}
+	
+	public class TableEpisode {
+		private TableEpisode() {}
+		public static final String TABLE_NAME="episode";
+		public static final String ID="_id";
+		public static final String FEED_ID="feedId";
+		public static final String URL="url";
+		public static final String TITLE="title";
+		public static final String DESCRIPTION="description";
+		public static final String AUTHOR="author";
+		public static final String PUBLISHED_DATE="publishedDate";
+		public static final String LOCAL_FILE="localFile";
+	}
+	
+	public class TableFile {
+		private TableFile() {}
+		public static final String TABLE_NAME="file";
+		public static final String ID="_id";
+		public static final String EPISODE_ID="episodeId";
+		public static final String PLAY_INDEX="playIndex";
+	}
+	
+	
+//	public enum TableEpisode {
+//		TABLE_NAME("episode"), ID("_id"), FEED_ID("feedId"), URL("url"), 
+//		TITLE("title"), DESCRIPTION("description"), AUTHOR("author"), 
+//		PUBLISHED_DATE("publishedDate"), LOCAL_FILE("localFile");
+//		
+//		private String mText;
+//		
+//		private TableEpisode(String text) {
+//			mText = text;
+//		}
+//		
+//		@Override 
+//		public String toString() {
+//			return mText;
+//		}
+//	}
+//	public enum TableQueue {
+//		ID, EPISODE_ID, PLAY_INDEX
+//	}
+	
 	private SQLiteDatabase mDb;
 	
 	private class DictionaryOpenHelper extends SQLiteOpenHelper {
@@ -32,17 +92,24 @@ public class Database {
 						"url TEXT, " +
 						"title TEXT, " +
 						"image TEXT);";
-		//TODO
+		
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						"feedTitle TEXT, " +
+						"feedId INTEGER, " +
 						"url TEXT, " +
 						"title TEXT, " +
 						"description TEXT, " +
 						"author TEXT, " +
-						"publishedDate TEXT, " +
-						"localFile TEXT);";
+						"publishedDate TEXT);";
+		
+		private static final String FILE_CREATE = 
+				"CREATE TABLE file (" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"episodeId INTEGER, " +
+						"playIndex TEXT);";
+		
+		//Queue: localPath, playIndex, order? 
 
 		DictionaryOpenHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -76,55 +143,51 @@ public class Database {
 	
 	public long addFeed(String url, String title, String imageUrl) {
 		ContentValues insertValues = new ContentValues();
-		insertValues.put("url", url);
-		insertValues.put("title", title);
-		insertValues.put("image", imageToBuffer(imageUrl));
-		return mDb.insert("feed", null, insertValues);
+		insertValues.put(TableFeed.URL, url);
+		insertValues.put(TableFeed.TITLE, title);
+		insertValues.put(TableFeed.IMAGE, imageToBuffer(imageUrl));
+		return mDb.insert(TableFeed.TABLE_NAME, null, insertValues);
 	}
 	
-	public long addEpisode(String feedTitle, String episodeUrl, String title, String description,
+	public long addEpisode(long feedId, String episodeUrl, String title, String description,
 			String author, String publishedDate) {
 		ContentValues insertValues = new ContentValues();
-		insertValues.put("feedTitle", feedTitle);
-		insertValues.put("url", episodeUrl);
-		insertValues.put("title", title);
-		insertValues.put("description", description);
-		insertValues.put("author", author);
-		insertValues.put("publishedDate", publishedDate);
-		return mDb.insert("episode", null, insertValues);
+		insertValues.put(TableEpisode.FEED_ID, feedId);
+		insertValues.put(TableEpisode.URL, episodeUrl);
+		insertValues.put(TableEpisode.TITLE, title);
+		insertValues.put(TableEpisode.DESCRIPTION, description);
+		insertValues.put(TableEpisode.AUTHOR, author);
+		insertValues.put(TableEpisode.PUBLISHED_DATE, publishedDate);
+		return mDb.insert(TableEpisode.TABLE_NAME, null, insertValues);
 	}
 	
-	public Cursor getSubscriptions() {
-		String table = "feed";
-		String[] columns = new String[] {"_id", "url", "title", "image"};
-		String where = null; //return everything
-		String[] whereArgs = null;
-		String groupBy = null;
-		String having = null;
-		String orderBy = null;
-		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
+	public Cursor getFeeds() {
+		String[] columns = new String[] {TableFeed.ID, TableFeed.URL, TableFeed.TITLE, TableFeed.IMAGE};
+		return mDb.query(TableFeed.TABLE_NAME, columns, null, null, null, null, null);
 	}
 	
-	public Cursor getEpisodes(String feedTitle) {
-		String table = "episode";
-		String[] columns = new String[] {"_id", "feedTitle", "url", "title", "description", "author", "publishedDate"};
-		String where = "feedTitle=?";
-		String[] whereArgs = new String[] {feedTitle};
-		String groupBy = null;
-		String having = null;
-		String orderBy = null;
-		return mDb.query(table, columns, where, whereArgs, groupBy, having, orderBy);
+	public Cursor getFeed(String feedId) {
+		String[] columns = new String[] {TableFeed.ID, TableFeed.URL, TableFeed.TITLE, TableFeed.IMAGE};
+		String where = TableFeed.ID + "=?";
+		String[] whereArgs = new String[] {feedId};
+		return mDb.query(TableFeed.TABLE_NAME, columns, where, whereArgs, null, null, null);
 	}
 	
-	public void removeFeed(String feedTitle) {
-		//SQLiteStatement statement = mDb.compileStatement("SELECT url FROM feed WHERE title=?");
-		//statement.bindString(1, feedName);
-		//String result = statement.simpleQueryForString();
-		SQLiteStatement statement = mDb.compileStatement("DELETE FROM episode WHERE feedTitle=?");
-		statement.bindString(1, feedTitle);
+	public Cursor getEpisodes(String feedId) {
+		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_ID, TableEpisode.URL, TableEpisode.TITLE, 
+				TableEpisode.DESCRIPTION, TableEpisode.AUTHOR, TableEpisode.PUBLISHED_DATE};
+		String where = TableEpisode.FEED_ID + "=?";
+		String[] whereArgs = new String[] {feedId};
+		return mDb.query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
+	}
+	
+	public void removeFeed(String feedId) {
+		SQLiteStatement statement = mDb.compileStatement("DELETE FROM " + TableEpisode.TABLE_NAME + " WHERE " +
+				TableEpisode.FEED_ID + "=?");
+		statement.bindString(1, feedId);
 		statement.executeUpdateDelete();
-		statement = mDb.compileStatement("DELETE FROM feed WHERE title=?");
-		statement.bindString(1, feedTitle);
+		statement = mDb.compileStatement("DELETE FROM " + TableFeed.TABLE_NAME + " WHERE " + TableFeed.ID + "=?");
+		statement.bindString(1, feedId);
 		statement.executeUpdateDelete();
 	}
 	
@@ -151,17 +214,23 @@ public class Database {
 
 	
 	public String getApplicationDirectory() {
-		SQLiteStatement statement = mDb.compileStatement("SELECT value FROM settings WHERE key='applicationDirectory'");
-		String result;
+		SQLiteStatement statement = mDb.compileStatement("SELECT " + TableSettings.VALUE + 
+				" FROM " + TableSettings.TABLE_NAME + " WHERE " + TableSettings.KEY + "='" +
+				TableSettings.APPLICATION_DIRECTORY + "'");
+		String dir;
 		try {
-			result = statement.simpleQueryForString();
+			dir = statement.simpleQueryForString();
 		} catch (SQLiteDoneException e) {
-			result = setApplicationDirectory();
+			dir = decipherApplicationDirectory();
+			ContentValues insertValues = new ContentValues();
+			insertValues.put(TableSettings.KEY, TableSettings.APPLICATION_DIRECTORY);
+			insertValues.put(TableSettings.VALUE, dir);
+			mDb.insert(TableSettings.TABLE_NAME, null, insertValues);
 		}
-		return result;
+		return dir;
 	}
 	
-	private String setApplicationDirectory() {
+	private String decipherApplicationDirectory() {
 		boolean externalAvailable = false;
 		boolean externalWritable = false;
 		String state = Environment.getExternalStorageState();

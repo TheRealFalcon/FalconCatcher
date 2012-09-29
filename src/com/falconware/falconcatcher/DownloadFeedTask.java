@@ -1,39 +1,47 @@
 package com.falconware.falconcatcher;
 
 import android.app.Activity;
-import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Pair;
-import android.view.Window;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class DownloadFeedTask extends AsyncTask<Pair<String,String>, String, Boolean> {
 	private Activity mActivity;
 	private Database mDb;
-	private Dialog mDialog;
-	private TextView mTextView;
+	private ProgressDialog mDialog;
+	//private TextView mTextView;
 	
 	public DownloadFeedTask(Activity context, Database db) {
 		mActivity = context;
-		mDialog = new Dialog(context);
-		mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		mDialog.setContentView(R.layout.import_dialog);
-		mTextView = (TextView)mDialog.findViewById(R.id.text);
+		//mDialog = new Dialog(context);
+		//mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		//mDialog.setContentView(R.layout.import_dialog);
+		mDialog = new ProgressDialog(context);
+		mDialog.setTitle("Import Podcast");
+		//mTextView = (TextView)mDialog.findViewById(R.id.text);
 		mDb = db;
 	}
 	
 	public void addFeeds(Pair<String,String>... nameUrlPairs) {
 		this.execute(nameUrlPairs);
 	}
+	
+	@Override
+	protected void onPreExecute() {
+		mDialog.show();	
+	}
 
 	@Override
 	protected Boolean doInBackground(Pair<String,String>... nameUrlPairs) {
+		//TODO: Stop being an idiot...
+		//Move the following into onPreExecute()
+		//Use ProgressDialog instead of rolling your own...get rid of the TextView too
 		mActivity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				mDialog.show();				
+							
 			}				
 		});
 		
@@ -62,7 +70,7 @@ public class DownloadFeedTask extends AsyncTask<Pair<String,String>, String, Boo
 	@Override
 	protected void onProgressUpdate(String... values) {
     	if (mDialog != null) {
-    		mTextView.setText(values[0]);
+    		mDialog.setMessage(values[0]);
     	}   	
 	}
 
@@ -82,7 +90,7 @@ public class DownloadFeedTask extends AsyncTask<Pair<String,String>, String, Boo
 				return;
 			}
 			SubscriptionsAdapter adapter = (SubscriptionsAdapter)view.getExpandableListAdapter();
-			adapter.setGroupCursor(mDb.getSubscriptions());
+			adapter.setGroupCursor(mDb.getFeeds());
 			adapter.notifyDataSetChanged();
 		}
 //		else {
