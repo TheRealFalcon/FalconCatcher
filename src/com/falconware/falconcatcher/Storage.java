@@ -23,7 +23,6 @@ public class Storage {
 		DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 		return manager.enqueue(request);
 	}
-
 }
 
 //boolean mExternalStorageAvailable = false;

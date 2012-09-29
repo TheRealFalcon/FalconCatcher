@@ -33,35 +33,14 @@ public class GoogleSelectionActivity extends Activity {
 	private Database mDb;
 	private ListView mView;
 	
-	public void getUserCredentials() {
-//		AccountManager manager = AccountManager.get(this);
-//		Account account = manager.getAccountsByType("com.google")[0];
-//		System.out.println(account.name);
-//		AccountManagerFuture<Bundle> managerFuture = manager.getAuthToken(account, "Google Reader", null, this, null, null); //Who the heck named that class?
-//		try {			
-//			managerFuture.getResult();
-//		} catch (AuthenticatorException e) {
-//			//Invalidate token and try to reauthenticate
-//			//manager.invalidate("com.google", managerFuture.)
-//			e.printStackTrace();
-//			finish();
-//		}
-//		catch (Exception e) { //TODO: Don't catch top level exception
-//			e.printStackTrace();
-//			finish();
-//		}
-		//Account account = accounts[0];
-		//manager.getAuthToken(...);
-		
-		//manager.getAccountsByType(type);
-	}
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		
-		getUserCredentials();
+		//getUserCredentials();
 		
 		mActionMode = null;
 		mDb = new Database(this);
