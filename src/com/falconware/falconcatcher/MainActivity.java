@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
@@ -23,6 +23,14 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        Intent playerIntent = new Intent(this, DownloadService.class);
+		playerIntent.setAction(PlayerService.ACTION_PLAY);
+		startService(playerIntent);	
+		
+		Intent aIntent = new Intent(this, DownloadService.class);
+		aIntent.setAction(PlayerService.ACTION_PAUSE);
+		startService(aIntent);	
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -50,7 +58,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-    	mDb.close();
+    	//mDb.close();
     }
 
     @Override
@@ -133,7 +141,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
     
     public void playOrPauseTrack(View view) {
-    	Button button = (Button)findViewById(R.id.play_or_pause_button);
+    	ImageButton button = (ImageButton)findViewById(R.id.play_or_pause_button);
 		Intent playerIntent = new Intent(this, PlayerService.class);		
 		
     	if (((String)button.getTag()).equals(getString(R.string.button_play))) {

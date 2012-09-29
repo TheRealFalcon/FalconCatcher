@@ -6,7 +6,6 @@ import java.net.URLConnection;
 
 import org.apache.http.util.ByteArrayBuffer;
 
-import android.accounts.AccountManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -53,6 +52,7 @@ public class Database {
 		public static final String TABLE_NAME="file";
 		public static final String ID="_id";
 		public static final String EPISODE_ID="episodeId";
+		public static final String PATH="path";
 		public static final String PLAY_INDEX="playIndex";
 	}
 	
@@ -77,7 +77,8 @@ public class Database {
 //		ID, EPISODE_ID, PLAY_INDEX
 //	}
 	
-	private SQLiteDatabase mDb;
+	//private SQLiteDatabase mDb;
+	private DictionaryOpenHelper mHelper;
 	
 	private class DictionaryOpenHelper extends SQLiteOpenHelper {
 		private static final int DATABASE_VERSION = 1;
@@ -107,6 +108,7 @@ public class Database {
 				"CREATE TABLE file (" +
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						"episodeId INTEGER, " +
+						"path STRING, " +
 						"playIndex TEXT);";
 		
 		//Queue: localPath, playIndex, order? 
@@ -120,6 +122,7 @@ public class Database {
 			db.execSQL(SETTINGS_CREATE);
 			db.execSQL(FEED_CREATE);
 			db.execSQL(EPISODE_CREATE);
+			db.execSQL(FILE_CREATE);
 			//ContentValues insertValues = new ContentValues();
 			//insertValues.put("key", "applicationDirectory");
 			//db.insert("settings", "value", insertValues);
@@ -133,20 +136,20 @@ public class Database {
 	}
 	
 	public Database(Context context) {
-		DictionaryOpenHelper helper = new DictionaryOpenHelper(context);
-		mDb = helper.getWritableDatabase();
+		mHelper = new DictionaryOpenHelper(context);
+		//mDb = helper.getWritableDatabase();
 	}
 	
-	public void close() {
-		mDb.close();
-	}
+	//public void close() {
+	//	mDb.close();
+	//}
 	
 	public long addFeed(String url, String title, String imageUrl) {
 		ContentValues insertValues = new ContentValues();
 		insertValues.put(TableFeed.URL, url);
 		insertValues.put(TableFeed.TITLE, title);
 		insertValues.put(TableFeed.IMAGE, imageToBuffer(imageUrl));
-		return mDb.insert(TableFeed.TABLE_NAME, null, insertValues);
+		return mHelper.getWritableDatabase().insert(TableFeed.TABLE_NAME, null, insertValues);
 	}
 	
 	public long addEpisode(long feedId, String episodeUrl, String title, String description,
@@ -158,19 +161,23 @@ public class Database {
 		insertValues.put(TableEpisode.DESCRIPTION, description);
 		insertValues.put(TableEpisode.AUTHOR, author);
 		insertValues.put(TableEpisode.PUBLISHED_DATE, publishedDate);
-		return mDb.insert(TableEpisode.TABLE_NAME, null, insertValues);
+		return mHelper.getWritableDatabase().insert(TableEpisode.TABLE_NAME, null, insertValues);
 	}
 	
 	public Cursor getFeeds() {
 		String[] columns = new String[] {TableFeed.ID, TableFeed.URL, TableFeed.TITLE, TableFeed.IMAGE};
-		return mDb.query(TableFeed.TABLE_NAME, columns, null, null, null, null, null);
+		Cursor cursor = mHelper.getReadableDatabase().query(TableFeed.TABLE_NAME, columns, null, null, null, null, null);
+		cursor.moveToFirst();
+		return cursor;
 	}
 	
 	public Cursor getFeed(String feedId) {
 		String[] columns = new String[] {TableFeed.ID, TableFeed.URL, TableFeed.TITLE, TableFeed.IMAGE};
 		String where = TableFeed.ID + "=?";
 		String[] whereArgs = new String[] {feedId};
-		return mDb.query(TableFeed.TABLE_NAME, columns, where, whereArgs, null, null, null);
+		Cursor cursor = mHelper.getReadableDatabase().query(TableFeed.TABLE_NAME, columns, where, whereArgs, null, null, null);
+		cursor.moveToFirst();
+		return cursor;
 	}
 	
 	public Cursor getEpisodes(String feedId) {
@@ -178,15 +185,28 @@ public class Database {
 				TableEpisode.DESCRIPTION, TableEpisode.AUTHOR, TableEpisode.PUBLISHED_DATE};
 		String where = TableEpisode.FEED_ID + "=?";
 		String[] whereArgs = new String[] {feedId};
-		return mDb.query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
+		Cursor cursor = mHelper.getReadableDatabase().query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
+		cursor.moveToFirst();
+		return cursor;
+	}
+	
+	public Cursor getEpisode(String episodeId) {
+		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_ID, TableEpisode.URL, TableEpisode.TITLE, 
+				TableEpisode.DESCRIPTION, TableEpisode.AUTHOR, TableEpisode.PUBLISHED_DATE};
+		String where = TableEpisode.ID + "=?";
+		String[] whereArgs = new String[] {episodeId};
+		Cursor cursor = mHelper.getReadableDatabase().query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
+		cursor.moveToFirst();
+		return cursor;
 	}
 	
 	public void removeFeed(String feedId) {
-		SQLiteStatement statement = mDb.compileStatement("DELETE FROM " + TableEpisode.TABLE_NAME + " WHERE " +
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		SQLiteStatement statement = db.compileStatement("DELETE FROM " + TableEpisode.TABLE_NAME + " WHERE " +
 				TableEpisode.FEED_ID + "=?");
 		statement.bindString(1, feedId);
 		statement.executeUpdateDelete();
-		statement = mDb.compileStatement("DELETE FROM " + TableFeed.TABLE_NAME + " WHERE " + TableFeed.ID + "=?");
+		statement = db.compileStatement("DELETE FROM " + TableFeed.TABLE_NAME + " WHERE " + TableFeed.ID + "=?");
 		statement.bindString(1, feedId);
 		statement.executeUpdateDelete();
 	}
@@ -214,7 +234,8 @@ public class Database {
 
 	
 	public String getApplicationDirectory() {
-		SQLiteStatement statement = mDb.compileStatement("SELECT " + TableSettings.VALUE + 
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		SQLiteStatement statement = db.compileStatement("SELECT " + TableSettings.VALUE + 
 				" FROM " + TableSettings.TABLE_NAME + " WHERE " + TableSettings.KEY + "='" +
 				TableSettings.APPLICATION_DIRECTORY + "'");
 		String dir;
@@ -225,7 +246,7 @@ public class Database {
 			ContentValues insertValues = new ContentValues();
 			insertValues.put(TableSettings.KEY, TableSettings.APPLICATION_DIRECTORY);
 			insertValues.put(TableSettings.VALUE, dir);
-			mDb.insert(TableSettings.TABLE_NAME, null, insertValues);
+			db.insert(TableSettings.TABLE_NAME, null, insertValues);
 		}
 		return dir;
 	}

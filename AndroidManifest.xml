@@ -31,6 +31,12 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+                  
+        <service
+            android:name=".DownloadService"
+            android:enabled="true"
+            android:exported="false" >            
+        </service>
 
         <activity
             android:name=".AddFeedActivity"

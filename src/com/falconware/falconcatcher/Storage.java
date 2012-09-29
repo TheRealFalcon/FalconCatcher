@@ -3,26 +3,28 @@ package com.falconware.falconcatcher;
 import java.io.File;
 
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.widget.Toast;
 
 public class Storage {
 	//private static final String APPLICATION_DIRECTORY = Environment.getExternalStorageDirectory().toString() + "/FalconCatcher/";
 	
-	public static long downloadEpisode(Context context, String applicationDirectory, String feedTitle, String episodeTitle, String url) {
-		String downloadDirectory = applicationDirectory + feedTitle + "/";
-		File downloadDir = new File(downloadDirectory);
-		downloadDir.mkdirs();
-		DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
-		//TODO: Won't always be mp3 extension
-		System.out.println("Downloaded file: " + downloadDir + "/" + episodeTitle + ".mp3");
-		request.setDestinationUri(Uri.fromFile(new File(downloadDir + "/" + episodeTitle + ".mp3")));
-		request.setTitle("FalconCatcher");
-		request.setDescription(feedTitle + ": " + episodeTitle);
-		DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-		return manager.enqueue(request);
-	}
+
+	
+	private static BroadcastReceiver onNotificationClick = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Toast.makeText(context, "onNotificationClick onReceive", Toast.LENGTH_LONG).show();			
+		}
+		
+	};
+	
+
 }
 
 //boolean mExternalStorageAvailable = false;

@@ -53,7 +53,6 @@ public class LocalParser {
 		long time1 = System.currentTimeMillis();
 		while (eventType != XmlPullParser.END_DOCUMENT) {
 			if (eventType == XmlPullParser.START_TAG) {
-				//System.out.println("Start Tag: " + parser.getName());
 				if (mParser.getName().equals("channel")) {
 					parseChannel(feedUrl);
 				}				
@@ -117,6 +116,11 @@ public class LocalParser {
 			if (eventType == XmlPullParser.START_TAG) {
 				String tagName = mParser.getName();
 				if (tagName.equals("media:content")) {
+					episodeUrl = getAttribute("url");
+					item.put(Database.TableEpisode.URL, episodeUrl);
+				}
+				//Trusting this url over the media:content one...WILL OVERWRITE
+				else if (tagName.equals("enclosure")) {
 					episodeUrl = getAttribute("url");
 					item.put(Database.TableEpisode.URL, episodeUrl);
 				}

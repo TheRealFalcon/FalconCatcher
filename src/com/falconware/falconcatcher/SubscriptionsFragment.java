@@ -12,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 
 
 public class SubscriptionsFragment extends Fragment {
@@ -75,11 +75,19 @@ public class SubscriptionsFragment extends Fragment {
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
-			Cursor cursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-			String feedTitle = cursor.getString(cursor.getColumnIndex("feedTitle"));
-			String episodeTitle = cursor.getString(cursor.getColumnIndex("title"));
-			String url = cursor.getString(cursor.getColumnIndex("url"));
-			long downloadId = Storage.downloadEpisode(mActivity, mDb.getApplicationDirectory(), feedTitle, episodeTitle, url);
+			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
+			Intent intent = new Intent(mActivity, DownloadService.class);
+			intent.setAction(DownloadService.ACTION_DOWNLOAD);
+			intent.putExtra("episodeId", episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID)));
+			mActivity.startService(intent);
+//			String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
+//			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
+//			String url = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.URL));
+//			
+//			Cursor feedCursor = mDb.getFeed(feedId);
+//			String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.TITLE));
+//			
+//			long downloadId = Storage.downloadEpisode(mActivity, mDb.getApplicationDirectory(), feedTitle, episodeTitle, url);
 			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
@@ -92,13 +100,14 @@ public class SubscriptionsFragment extends Fragment {
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
 			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
+			
 			Cursor feedCursor = mDb.getFeed(feedId);
 			String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.TITLE));
 			
 			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");
-			String filename = mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
+			String filename = "/storage/sdcard0/FalconCatcher/All About Android/aaa0078.mp3"; //THIS IS WRONG! mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
 			
-			Button button = (Button)mActivity.findViewById(R.id.play_or_pause_button);
+			ImageButton button = (ImageButton)mActivity.findViewById(R.id.play_or_pause_button);
 			button.setBackgroundResource(android.R.drawable.ic_media_pause);
 			button.setTag(getString(R.string.button_pause));
 			
@@ -113,7 +122,7 @@ public class SubscriptionsFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		mDb.close();
+		//mDb.close();
 	}
 	
 }
