@@ -16,7 +16,7 @@ import org.json.JSONTokener;
 
 public class ReaderParser
 {
-	public ArrayList<Map<String,String> > parseReader() {
+	public ArrayList<Map<String,String> > parseReader(){
 		String readerJson = "";
     	try {
     		Scanner scanner = new Scanner(new FileInputStream("/mnt/sdcard/download/testFeeds/readerList.json"));

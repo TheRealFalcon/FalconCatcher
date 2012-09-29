@@ -8,6 +8,8 @@ import java.util.Map;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,9 +34,23 @@ public class GoogleSelectionActivity extends Activity {
 	private ListView mView;
 	
 	public void getUserCredentials() {
-		AccountManager manager = AccountManager.get(this);
-		Account[] accounts = manager.getAccounts();
-		Account account = accounts[0];
+//		AccountManager manager = AccountManager.get(this);
+//		Account account = manager.getAccountsByType("com.google")[0];
+//		System.out.println(account.name);
+//		AccountManagerFuture<Bundle> managerFuture = manager.getAuthToken(account, "Google Reader", null, this, null, null); //Who the heck named that class?
+//		try {			
+//			managerFuture.getResult();
+//		} catch (AuthenticatorException e) {
+//			//Invalidate token and try to reauthenticate
+//			//manager.invalidate("com.google", managerFuture.)
+//			e.printStackTrace();
+//			finish();
+//		}
+//		catch (Exception e) { //TODO: Don't catch top level exception
+//			e.printStackTrace();
+//			finish();
+//		}
+		//Account account = accounts[0];
 		//manager.getAuthToken(...);
 		
 		//manager.getAccountsByType(type);

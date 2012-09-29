@@ -23,6 +23,7 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 			
 			@Override
 			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+				//TODO: Bug that if there is no image associated with this podcast, it'll steal somebody else's icon
 				if (view instanceof ImageView) {
 					try {
 						byte[] imageByteArray=cursor.getBlob(columnIndex);
