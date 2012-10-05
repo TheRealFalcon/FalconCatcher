@@ -58,14 +58,14 @@ public class PlayerService extends Service {
 			Notification notification;
 			if (Build.VERSION.SDK_INT < 16) {
 				notification = new Notification.Builder(getApplicationContext())
-				.setContentTitle("Notification title")
+				.setContentTitle(getString(R.string.app_name))
 				.setContentText("Notification text")
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.getNotification();
 			}
 			else {
 				notification = new Notification.Builder(getApplicationContext())
-				.setContentTitle("Notification title")
+				.setContentTitle(getString(R.string.app_name))
 				.setContentText("Notification text")
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.build();

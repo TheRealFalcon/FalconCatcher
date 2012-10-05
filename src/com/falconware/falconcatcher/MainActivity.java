@@ -18,10 +18,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     private Database mDb;
+    private boolean startPlaying;  //Stupid hack to work about tab comm issues
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startPlaying = false;
         setContentView(R.layout.activity_main);
 
         // Set up the action bar.
@@ -98,7 +100,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		fragment = new QueueFragment();
     	}
     	else {
-    		fragment = new PlayerFragment();    		   		
+    		fragment = new PlayerFragment();
+    		if (startPlaying) {
+    			Bundle bundle = new Bundle();
+    			bundle.putBoolean("playing", true);
+    			fragment.setArguments(bundle);
+    			startPlaying = false;
+    		}
     	}
     	getSupportFragmentManager().beginTransaction()
 		.replace(R.id.container, fragment)
@@ -106,9 +114,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
     
     public void startPlayer() {
+    	startPlaying = true;
     	getActionBar().selectTab(getActionBar().getTabAt(2));
 //    	getSupportFragmentManager().beginTransaction()
-//    	.replace(R.id.container, new PlayerFragment())
+//    	.replace(R.id.container, player)
 //    	.commit();
     }
 

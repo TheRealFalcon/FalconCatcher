@@ -87,7 +87,14 @@ public class PlayerFragment extends Fragment {
 		Button button = (Button)layout.findViewById(R.id.play_or_pause_button);
 		button.setOnClickListener(new PlayOrPauseTrack());
 		
-		setButtonState();
+		//setButtonState();
+		Bundle bundle = getArguments();
+		if (bundle != null) {
+			boolean playing = getArguments().getBoolean("playing", false);
+			if (playing) {
+				((Button)layout.findViewById(R.id.play_or_pause_button)).setBackgroundResource(android.R.drawable.ic_media_pause);
+			}
+		}
 		
 		//Do rewind, fastforward, and next
 		return layout;

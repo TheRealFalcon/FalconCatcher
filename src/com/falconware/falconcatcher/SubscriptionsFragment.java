@@ -80,7 +80,7 @@ public class SubscriptionsFragment extends Fragment {
 			intent.setAction(DownloadService.ACTION_DOWNLOAD);
 			intent.putExtra("episodeId", episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE)));
 			//UNCOMMENT THIS TO DOWNLOAD!!!!!!!
-			//mActivity.startService(intent);			
+			mActivity.startService(intent);			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = mAdapter.getGroup(mSelectedGroupRow);
@@ -89,6 +89,8 @@ public class SubscriptionsFragment extends Fragment {
 			mAdapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
+			//TODO: THIS SECTION NEEDS TO BE FIXED TO GET THE DOWNLOADED FILE INSTEAD OF 'GUESSING'
+			
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			//String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
 			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
