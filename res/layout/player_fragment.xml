@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/main_audio_view"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal" 
+        android:gravity="right">
+        
+        <Button
+            android:id="@+id/rewind_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            android:background="@android:drawable/ic_media_rew"
+             />  
+        <Button
+            android:id="@+id/play_or_pause_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            
+            android:background="@android:drawable/ic_media_play"
+            android:tag="@string/button_play"
+             />
+        <Button
+            android:id="@+id/fast_forward_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp" 
+            android:layout_margin="5dp"
+            android:background="@android:drawable/ic_media_ff"
+             />    
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            android:background="@android:drawable/ic_media_next" 
+            android:onClick="nextTrack" />
+    </LinearLayout>

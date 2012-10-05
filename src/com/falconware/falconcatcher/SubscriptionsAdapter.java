@@ -41,7 +41,7 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 	}
 	@Override
 	protected Cursor getChildrenCursor(Cursor groupCursor) {
-		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex(Database.TableFeed.ID)));
+		return mDb.getEpisodes(groupCursor.getString(groupCursor.getColumnIndex(Database.TableFeed.TITLE)));
 	}
 
 }

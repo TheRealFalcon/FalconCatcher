@@ -35,8 +35,16 @@
         <service
             android:name=".DownloadService"
             android:enabled="true"
-            android:exported="false" >            
+            android:exported="false" > 
         </service>
+        
+        <receiver
+            android:name="DownloadReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
+            
 
         <activity
             android:name=".AddFeedActivity"

@@ -23,14 +23,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        Intent playerIntent = new Intent(this, DownloadService.class);
-		playerIntent.setAction(PlayerService.ACTION_PLAY);
-		startService(playerIntent);	
-		
-		Intent aIntent = new Intent(this, DownloadService.class);
-		aIntent.setAction(PlayerService.ACTION_PAUSE);
-		startService(aIntent);	
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -103,10 +95,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		fragment = new SubscriptionsFragment();
     	}
     	else if (tab.getPosition() == 1) {
-    		fragment = new DummySectionFragment();
-    		Bundle args = new Bundle();
-    		args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, tab.getPosition() + 1);
-    		fragment.setArguments(args);  
+    		fragment = new QueueFragment();
     	}
     	else {
     		fragment = new PlayerFragment();    		   		
@@ -115,49 +104,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 		.replace(R.id.container, fragment)
 		.commit();
     }
+    
+    public void startPlayer() {
+    	getActionBar().selectTab(getActionBar().getTabAt(2));
+//    	getSupportFragmentManager().beginTransaction()
+//    	.replace(R.id.container, new PlayerFragment())
+//    	.commit();
+    }
 
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
 
-    /**
-     * A dummy fragment representing a section of the app, but that simply displays dummy text.
-     */
-    public static class DummySectionFragment extends Fragment {
-        public DummySectionFragment() {
-        }
 
-        public static final String ARG_SECTION_NUMBER = "section_number";
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            TextView textView = new TextView(getActivity());
-            textView.setGravity(Gravity.CENTER);
-            Bundle args = getArguments();
-            textView.setText(Integer.toString(args.getInt(ARG_SECTION_NUMBER)));
-            return textView;
-        }
-    }
-    
-    public void playOrPauseTrack(View view) {
-    	ImageButton button = (ImageButton)findViewById(R.id.play_or_pause_button);
-		Intent playerIntent = new Intent(this, PlayerService.class);		
-		
-    	if (((String)button.getTag()).equals(getString(R.string.button_play))) {
-    		playerIntent.setAction(PlayerService.ACTION_PLAY);
-    		button.setBackgroundResource(android.R.drawable.ic_media_pause);
-    		button.setTag(getString(R.string.button_pause));    		
-    	}
-    	else {
-    		playerIntent.setAction(PlayerService.ACTION_PAUSE);
-    		button.setBackgroundResource(android.R.drawable.ic_media_play);
-    		button.setTag(getString(R.string.button_play));
-    	}
-    	startService(playerIntent);
-    }
-    
-    public void nextTrack(View view) {
-    	System.out.println("Next track");
-    }
 }

@@ -2,22 +2,24 @@ package com.falconware.falconcatcher;
 
 import java.io.File;
 
+import android.app.AlarmManager;
 import android.app.DownloadManager;
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 
 public class DownloadService extends IntentService {
-	public DownloadService(String name) {
-		super(name);
-	}
-
 	public static final String ACTION_DOWNLOAD = "com.falconware.action.DOWNLOAD";
 	public static final String ACTION_SCHEDULE = "com.falconware.action.SCHEDULE";
+	
+	private DownloadManager manager;
+	
+	public DownloadService() {
+		super("DownloadService");
+	}
 	
 //    @Override
 //    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -32,6 +34,14 @@ public class DownloadService extends IntentService {
 //		}.execute(intent);
 //    	return START_REDELIVER_INTENT;
 //    }
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+
+		
+		//registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
@@ -46,47 +56,53 @@ public class DownloadService extends IntentService {
 	}
 	
 	//private long downloadEpisode(String feedTitle, String episodeTitle, String url) {
-	private void downloadEpisode(String episodeId) {
+	private void downloadEpisode(String episodeTitle) {
 		Database db = new Database(this);
-		Cursor episodeCursor = db.getEpisode(episodeId);
-		String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
+		Cursor episodeCursor = db.getEpisode(episodeTitle);
+		//String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
 		String url = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.URL));
 		
-		String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
-		Cursor feedCursor = db.getFeed(feedId);
-		String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.ID));
+		//String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
+		//Cursor feedCursor = db.getFeed(feedId);
+		String feedTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_TITLE));
+		String feedDir = sanitizeDir(feedTitle);
 		
-		String downloadDirectory = new Database(this).getApplicationDirectory() + feedTitle + "/";
+		String downloadDirectory = new Database(this).getApplicationDirectory() + feedDir + "/";
 		File downloadDir = new File(downloadDirectory);
-		downloadDir.mkdirs();
+		if (!downloadDir.isDirectory() && downloadDir.mkdirs() == false) {
+			System.err.println("ERROR!  Can't create feed directory.");
+			System.err.println("Tried to create: " + downloadDir);
+		}
 		Uri currentUri = Uri.parse(url);
 		String filename = currentUri.getLastPathSegment();
 		
+		//TODO: Check that URI is valid.  DownloadManager is too stupid to know that a URI is invalid
 		final String finalDestination = downloadDir + "/" + filename;
 		DownloadManager.Request request = new DownloadManager.Request(currentUri);		
-		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);		
+		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
 		request.setDestinationUri(Uri.fromFile(new File(finalDestination)));
-		request.setTitle("FalconCatcher");
-		request.setDescription(feedTitle + ": " + episodeTitle);
+		request.setTitle(getString(R.string.app_name));
+		request.setDescription(feedDir + ": " + episodeTitle);
 		System.out.println("Download location: " + finalDestination);
-		DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);		
-		registerReceiver(new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				System.out.println(finalDestination);
-			}		
-		}, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);	
+		
+
+		
+		
 		//registerReceiver(onNotificationClick, new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED));
+		//AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+		//Intent intent = new Intent(this, CompleteAlarm.class);
+		//alarm.set(AlarmManager.RTC, triggerAtMillis, operation)
+		
 		manager.enqueue(request);
 	}
 	
-//	private static BroadcastReceiver onComplete = new BroadcastReceiver() {
-//
-//		@Override
-//		public void onReceive(Context context, Intent intent) {
-//						
-//		}		
-//	};
+	private String sanitizeDir(String title) {
+		return title.replaceAll("[\"|\\\\?*<\":>+\\[\\]/']", "");
+	}
+	
+
+
 
 
 }

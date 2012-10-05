@@ -75,7 +75,7 @@ public class LocalParser {
 		//When getText() returns non-null, getName() returns null
 		String imageUrl = "";
 		String title = "";
-		List<Map<String,String> > episodeList = new LinkedList<Map<String,String> >();
+		//List<Map<String,String> > episodeList = new LinkedList<Map<String,String> >();
 		while (eventType != XmlPullParser.END_TAG || !mParser.getName().equals("channel")) {
 			if (eventType == XmlPullParser.START_TAG) {
 				//System.out.println("Start Tag: " + parser.getName());
@@ -87,21 +87,20 @@ public class LocalParser {
 					imageUrl = getAttribute("href");
 				}
 				else if (tagName.equals("item")) {
-					episodeList.add(getItem());
+					//episodeList.add(getItem(title));
+					getItem(title);
 				}
 			}
 			eventType = mParser.next();
 		}
-		long feedId = mDb.addFeed(feedUrl, title, imageUrl);
-		for (Map<String,String> episode : episodeList) {
-			mDb.addEpisode(feedId, episode.get(Database.TableEpisode.URL), episode.get(Database.TableEpisode.TITLE), 
-					episode.get(Database.TableEpisode.DESCRIPTION), episode.get(Database.TableEpisode.AUTHOR), 
-					episode.get(Database.TableEpisode.PUBLISHED_DATE));
-		}
+		mDb.addFeed(feedUrl, title, imageUrl);
+		//for (Map<String,String> episode : episodeList) {
+			
+		//}
 		
 	}
 	
-	private Map<String,String> getItem() throws XmlPullParserException, IOException {
+	private void getItem(String feedTitle) throws XmlPullParserException, IOException {
 		//System.out.println("In parse item");
 		int eventType = mParser.next();		
 		String episodeUrl = "";
@@ -110,35 +109,35 @@ public class LocalParser {
 		String author = "";
 		String pubDate = "";
 		
-		Map<String,String> item = new HashMap<String,String>();
+		//Map<String,String> item = new HashMap<String,String>();
 		
 		while (eventType != XmlPullParser.END_TAG || !mParser.getName().equals("item")) {
 			if (eventType == XmlPullParser.START_TAG) {
 				String tagName = mParser.getName();
 				if (tagName.equals("media:content")) {
 					episodeUrl = getAttribute("url");
-					item.put(Database.TableEpisode.URL, episodeUrl);
+					//item.put(Database.TableEpisode.URL, episodeUrl);
 				}
 				//Trusting this url over the media:content one...WILL OVERWRITE
 				else if (tagName.equals("enclosure")) {
 					episodeUrl = getAttribute("url");
-					item.put(Database.TableEpisode.URL, episodeUrl);
+					//item.put(Database.TableEpisode.URL, episodeUrl);
 				}
 				else if (tagName.equals("title")) {
 					title = mParser.nextText();
-					item.put(Database.TableEpisode.TITLE, title);
+					//item.put(Database.TableEpisode.TITLE, title);
 				}
 				else if (tagName.equals("description")) {
 					description = mParser.nextText();
-					item.put(Database.TableEpisode.DESCRIPTION, description);
+					//item.put(Database.TableEpisode.DESCRIPTION, description);
 				}
 				else if (tagName.equals("itunes:author")) {
 					author = mParser.nextText();
-					item.put(Database.TableEpisode.AUTHOR, author);
+					//item.put(Database.TableEpisode.AUTHOR, author);
 				}
 				else if (tagName.equals("pubDate")) {
 					pubDate = mParser.nextText(); 
-					item.put(Database.TableEpisode.PUBLISHED_DATE, pubDate);
+					//item.put(Database.TableEpisode.PUBLISHED_DATE, pubDate);
 				}
 				//System.out.println("Start Tag: " + parser.getName());
 			}
@@ -147,8 +146,11 @@ public class LocalParser {
 			}
 			eventType = mParser.next();
 		}
-		//mDb.addEpisode(feedId, episodeUrl, title, description, author, pubDate);
-		return item;
+		mDb.addEpisode(feedTitle, episodeUrl, title, description, author, pubDate);
+		//mDb.addEpisode(feedTitle, episode.get(Database.TableEpisode.URL), episode.get(Database.TableEpisode.TITLE), 
+		//		episode.get(Database.TableEpisode.DESCRIPTION), episode.get(Database.TableEpisode.AUTHOR), 
+		//		episode.get(Database.TableEpisode.PUBLISHED_DATE));
+		//return item;
 	}
 	
 	private String getAttribute(String attribute) {

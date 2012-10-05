@@ -38,7 +38,7 @@ public class Database {
 		private TableEpisode() {}
 		public static final String TABLE_NAME="episode";
 		public static final String ID="_id";
-		public static final String FEED_ID="feedId";
+		public static final String FEED_TITLE="feedTitle";
 		public static final String URL="url";
 		public static final String TITLE="title";
 		public static final String DESCRIPTION="description";
@@ -51,8 +51,9 @@ public class Database {
 		private TableFile() {}
 		public static final String TABLE_NAME="file";
 		public static final String ID="_id";
-		public static final String EPISODE_ID="episodeId";
+		public static final String EPISODE_TITLE="episodeTitle";
 		public static final String PATH="path";
+		public static final String DISPLAY_ORDER="displayOrder";
 		public static final String PLAY_INDEX="playIndex";
 	}
 	
@@ -97,7 +98,7 @@ public class Database {
 		private static final String EPISODE_CREATE =
 				"CREATE TABLE episode (" +
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						"feedId INTEGER, " +
+						"feedTitle String, " +
 						"url TEXT, " +
 						"title TEXT, " +
 						"description TEXT, " +
@@ -107,8 +108,9 @@ public class Database {
 		private static final String FILE_CREATE = 
 				"CREATE TABLE file (" +
 						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						"episodeId INTEGER, " +
+						"episodeTitle INTEGER, " +
 						"path STRING, " +
+						"displayOrder INTEGER, " +
 						"playIndex TEXT);";
 		
 		//Queue: localPath, playIndex, order? 
@@ -149,19 +151,40 @@ public class Database {
 		insertValues.put(TableFeed.URL, url);
 		insertValues.put(TableFeed.TITLE, title);
 		insertValues.put(TableFeed.IMAGE, imageToBuffer(imageUrl));
-		return mHelper.getWritableDatabase().insert(TableFeed.TABLE_NAME, null, insertValues);
+		long id = mHelper.getWritableDatabase().insert(TableFeed.TABLE_NAME, null, insertValues);
+		return id;
 	}
 	
-	public long addEpisode(long feedId, String episodeUrl, String title, String description,
+	public long addEpisode(String feedTitle, String episodeUrl, String title, String description,
 			String author, String publishedDate) {
 		ContentValues insertValues = new ContentValues();
-		insertValues.put(TableEpisode.FEED_ID, feedId);
+		insertValues.put(TableEpisode.FEED_TITLE, feedTitle);
 		insertValues.put(TableEpisode.URL, episodeUrl);
 		insertValues.put(TableEpisode.TITLE, title);
 		insertValues.put(TableEpisode.DESCRIPTION, description);
 		insertValues.put(TableEpisode.AUTHOR, author);
 		insertValues.put(TableEpisode.PUBLISHED_DATE, publishedDate);
-		return mHelper.getWritableDatabase().insert(TableEpisode.TABLE_NAME, null, insertValues);
+		long id = mHelper.getWritableDatabase().insert(TableEpisode.TABLE_NAME, null, insertValues);
+		return id;
+	}
+	
+	public long addFile(String episodeTitle, String path) {
+		ContentValues insertValues = new ContentValues();
+		insertValues.put(TableFile.EPISODE_TITLE, episodeTitle);
+		insertValues.put(TableFile.PATH, path);
+		
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		Cursor cursor = db.rawQuery("SELECT MAX(displayOrder) FROM file", null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			int displayOrder = cursor.getInt(0) + 1;
+			insertValues.put(TableFile.DISPLAY_ORDER, displayOrder);
+		}
+		else {
+			insertValues.put(TableFile.DISPLAY_ORDER, 0);
+		}
+		//insertValues.put(TableFile.PLAY_INDEX, null);
+		return db.insert(TableFile.TABLE_NAME, null, insertValues);
 	}
 	
 	public Cursor getFeeds() {
@@ -181,33 +204,48 @@ public class Database {
 	}
 	
 	public Cursor getEpisodes(String feedId) {
-		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_ID, TableEpisode.URL, TableEpisode.TITLE, 
+		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_TITLE, TableEpisode.URL, TableEpisode.TITLE, 
 				TableEpisode.DESCRIPTION, TableEpisode.AUTHOR, TableEpisode.PUBLISHED_DATE};
-		String where = TableEpisode.FEED_ID + "=?";
+		String where = TableEpisode.FEED_TITLE + "=?";
 		String[] whereArgs = new String[] {feedId};
 		Cursor cursor = mHelper.getReadableDatabase().query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
 		cursor.moveToFirst();
 		return cursor;
 	}
 	
-	public Cursor getEpisode(String episodeId) {
-		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_ID, TableEpisode.URL, TableEpisode.TITLE, 
+	public Cursor getEpisode(String episodeTitle) {
+		String[] columns = new String[] {TableEpisode.ID, TableEpisode.FEED_TITLE, TableEpisode.URL, TableEpisode.TITLE, 
 				TableEpisode.DESCRIPTION, TableEpisode.AUTHOR, TableEpisode.PUBLISHED_DATE};
-		String where = TableEpisode.ID + "=?";
-		String[] whereArgs = new String[] {episodeId};
+		String where = TableEpisode.TITLE + "=?";
+		String[] whereArgs = new String[] {episodeTitle};
 		Cursor cursor = mHelper.getReadableDatabase().query(TableEpisode.TABLE_NAME, columns, where, whereArgs, null, null, null);
 		cursor.moveToFirst();
 		return cursor;
 	}
 	
-	public void removeFeed(String feedId) {
+	public Cursor getQueue() {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT f._id, s.image, f.episodeTitle " +
+				"FROM file f " +
+				"INNER JOIN episode e on e.title=f.episodeTitle " +
+				"INNER JOIN feed s on s.title=e.feedTitle", null);
+		c.moveToFirst();
+		return c;
+		//mHelper.getReadableDatabase().rawQuery("SELECT ?.?, ?.? FROM ? INNER JOIN ? ON ?.?=?.?", 
+//				new String[] {TableFeed.TABLE_NAME, TableFeed.IMAGE, TableFile.TABLE_NAME, TableFile.EPISODE_NAME,
+//				TableFeed.TABLE_NAME, TableFile.TABLE_NAME,
+//				TableFile.})
+	}
+	
+	
+	public void removeFeed(String feedTitle) {
+		//TODO: REMOVE FROM QUEUE AND DELETE LOCAL FILE
 		SQLiteDatabase db = mHelper.getWritableDatabase();
 		SQLiteStatement statement = db.compileStatement("DELETE FROM " + TableEpisode.TABLE_NAME + " WHERE " +
-				TableEpisode.FEED_ID + "=?");
-		statement.bindString(1, feedId);
+				TableEpisode.FEED_TITLE + "=?");
+		statement.bindString(1, feedTitle);
 		statement.executeUpdateDelete();
-		statement = db.compileStatement("DELETE FROM " + TableFeed.TABLE_NAME + " WHERE " + TableFeed.ID + "=?");
-		statement.bindString(1, feedId);
+		statement = db.compileStatement("DELETE FROM " + TableFeed.TABLE_NAME + " WHERE " + TableFeed.TITLE + "=?");
+		statement.bindString(1, feedTitle);
 		statement.executeUpdateDelete();
 	}
 	

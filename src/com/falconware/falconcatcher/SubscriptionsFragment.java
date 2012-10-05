@@ -12,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
 
 
 public class SubscriptionsFragment extends Fragment {
@@ -21,13 +21,13 @@ public class SubscriptionsFragment extends Fragment {
 	private int mSelectedChildRow;
 	private SubscriptionsAdapter mAdapter;
 	private Database mDb;
-	private Activity mActivity;
+	private MainActivity mActivity;
 	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = getActivity();
+		mActivity = (MainActivity)getActivity();
 		mDb = new Database(mActivity);
 	}
 	
@@ -78,43 +78,38 @@ public class SubscriptionsFragment extends Fragment {
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
 			Intent intent = new Intent(mActivity, DownloadService.class);
 			intent.setAction(DownloadService.ACTION_DOWNLOAD);
-			intent.putExtra("episodeId", episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID)));
-			mActivity.startService(intent);
-//			String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
-//			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
-//			String url = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.URL));
-//			
-//			Cursor feedCursor = mDb.getFeed(feedId);
-//			String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.TITLE));
-//			
-//			long downloadId = Storage.downloadEpisode(mActivity, mDb.getApplicationDirectory(), feedTitle, episodeTitle, url);
-			
+			intent.putExtra("episodeId", episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE)));
+			//UNCOMMENT THIS TO DOWNLOAD!!!!!!!
+			//mActivity.startService(intent);			
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = mAdapter.getGroup(mSelectedGroupRow);
-			mDb.removeFeed(cursor.getString(cursor.getColumnIndex(Database.TableFeed.ID)));
+			mDb.removeFeed(cursor.getString(cursor.getColumnIndex(Database.TableFeed.TITLE)));
 			mAdapter.setGroupCursor(mDb.getFeeds());
 			mAdapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-			String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
+			//String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
 			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
 			
-			Cursor feedCursor = mDb.getFeed(feedId);
-			String feedTitle = feedCursor.getString(feedCursor.getColumnIndex(Database.TableFeed.TITLE));
+			//Cursor feedCursor = mDb.getFeed(feedId);
+			String feedTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_TITLE));
 			
 			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");
-			String filename = "/storage/sdcard0/FalconCatcher/All About Android/aaa0078.mp3"; //THIS IS WRONG! mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
+			//String filename = "/storage/sdcard0/FalconCatcher/All About Android/aaa0078.mp3"; 
+			String filename = mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
 			
-			ImageButton button = (ImageButton)mActivity.findViewById(R.id.play_or_pause_button);
-			button.setBackgroundResource(android.R.drawable.ic_media_pause);
-			button.setTag(getString(R.string.button_pause));
+//			Button button = (Button)mActivity.findViewById(R.id.play_or_pause_button);
+//			button.setBackgroundResource(android.R.drawable.ic_media_pause);
+//			button.setTag(getString(R.string.button_pause));
 			
 			Intent playerIntent = new Intent(mActivity, PlayerService.class);
 			playerIntent.setAction(PlayerService.ACTION_PLAY);
 			playerIntent.putExtra("filename", filename);
-			mActivity.startService(playerIntent);	
+			mActivity.startService(playerIntent);
+			
+			mActivity.startPlayer();
 		}
 		return super.onContextItemSelected(item);
 	}

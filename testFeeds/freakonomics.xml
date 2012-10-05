@@ -29,7 +29,7 @@
     <description>&lt;p&gt;College tends to make people happier, healthier, and wealthier. But how?&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/freakonomicsradio/~4/r1QfA5hJh4k" height="1" width="1"/&gt;</description>
     <pubDate>Wed, 15 Aug 2012 17:00:00 -0400</pubDate>
     <guid isPermaLink="false">http://www.wnyc.org/articles/freakonomics-podcast/2012/aug/15/freakonomics-goes-college-part-2/</guid>
-    <media:content url="http://10.0.2.2:8080/test1.mp3" type="audio/mpeg" />
+    <media:content url="http://192.168.1.3:8080/test1.mp3" type="audio/mpeg" />
     <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Stephen J. Dubner</dc:creator>
     <itunes:explicit>no</itunes:explicit>
     <itunes:subtitle> College tends to make people happier, healthier, and wealthier. But how? </itunes:subtitle>

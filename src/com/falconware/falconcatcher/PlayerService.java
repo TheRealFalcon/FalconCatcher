@@ -16,6 +16,7 @@ import android.os.IBinder;
 public class PlayerService extends Service {
 	public static final String ACTION_PLAY = "com.falconware.action.PLAY";
 	public static final String ACTION_PAUSE = "com.falconware.action.PAUSE";
+	public static final String ACTION_DIE_IF_IDLE = "com.falconware.action.DIE_IF_IDLE";
 	private static final int NOTIFICATION_ID = 1;
 	private final IBinder mBinder = new LocalBinder();
 	
@@ -24,6 +25,7 @@ public class PlayerService extends Service {
     @Override
     public void onCreate() {
     	super.onCreate();
+    	System.out.println("In onCreate()");
     	mPlayer = new MediaPlayer();
 		mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     }
@@ -76,12 +78,8 @@ public class PlayerService extends Service {
 //			notification.setLatestEventInfo(getApplicationContext(), "FalconCatcher", "Playing stuff", PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
 //			
 			String filename = intent.getStringExtra("filename");
-			if (filename == null) {
-				if (!mPlayer.isPlaying()) {
-					mPlayer.start();
-				}
-			}
-			else {
+			
+			if (filename != null) {
 				try {
 					mPlayer.reset();
 					mPlayer.setDataSource(filename);
@@ -91,14 +89,28 @@ public class PlayerService extends Service {
 				} catch (IOException e) {
 					e.printStackTrace();			
 				}	
-			}			
+			}
+			if (!mPlayer.isPlaying()) {
+				mPlayer.start();
+			}		
 		}
 		else if (intentAction.equals(ACTION_PAUSE)) {
 			mPlayer.pause();
-			stopSelf(id);
 		}
-		
+		else if (intentAction.equals(ACTION_DIE_IF_IDLE)) {
+			if (!mPlayer.isPlaying()) {
+				stopSelf(id);
+			}
+		}		
 	}
+	
+	public MediaPlayer getPlayer() {
+		return mPlayer;
+	}
+	
+//	public boolean isPlaying() {
+//		return mPlayer.isPlaying();
+//	}
 	
 	@Override
 	public void onDestroy() {

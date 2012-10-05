@@ -34,17 +34,7 @@ public class DownloadFeedTask extends AsyncTask<Pair<String,String>, String, Boo
 	}
 
 	@Override
-	protected Boolean doInBackground(Pair<String,String>... nameUrlPairs) {
-		//TODO: Stop being an idiot...
-		//Move the following into onPreExecute()
-		//Use ProgressDialog instead of rolling your own...get rid of the TextView too
-		mActivity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-							
-			}				
-		});
-		
+	protected Boolean doInBackground(Pair<String,String>... nameUrlPairs) {		
 		for (Pair<String,String> nameUrlPair : nameUrlPairs) {
 			String name = nameUrlPair.first;
 			String url = nameUrlPair.second;
