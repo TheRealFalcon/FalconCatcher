@@ -3,6 +3,7 @@ package com.falconware.falconcatcher;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -18,12 +19,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     private Database mDb;
-    private boolean startPlaying;  //Stupid hack to work about tab comm issues
+    private Fragment playerFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startPlaying = false;
         setContentView(R.layout.activity_main);
 
         // Set up the action bar.
@@ -35,6 +35,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section2).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section3).setTabListener(this));       
     	mDb = new Database(this);
+    	playerFragment = new PlayerFragment();
     }
     
     @Override
@@ -100,13 +101,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		fragment = new QueueFragment();
     	}
     	else {
-    		fragment = new PlayerFragment();
-    		if (startPlaying) {
-    			Bundle bundle = new Bundle();
-    			bundle.putBoolean("playing", true);
-    			fragment.setArguments(bundle);
-    			startPlaying = false;
-    		}
+    		fragment = playerFragment;
     	}
     	getSupportFragmentManager().beginTransaction()
 		.replace(R.id.container, fragment)
@@ -114,7 +109,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
     
     public void startPlayer() {
-    	startPlaying = true;
     	getActionBar().selectTab(getActionBar().getTabAt(2));
 //    	getSupportFragmentManager().beginTransaction()
 //    	.replace(R.id.container, player)
@@ -123,6 +117,15 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
+    
+    
+    public void playFile(long id) {
+		Intent playerIntent = new Intent(this, PlayerService.class);
+		playerIntent.setAction(PlayerService.ACTION_PLAY_LOCAL);
+		playerIntent.putExtra("id", id);
+		startService(playerIntent);		
+		startPlayer();
     }
 
 

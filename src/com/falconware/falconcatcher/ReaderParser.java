@@ -1,6 +1,8 @@
 package com.falconware.falconcatcher;
 
-import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,19 +57,19 @@ public class ReaderParser extends AsyncTask<Void, Void, Boolean>
 	private boolean parseReader() {
 		String readerJson = "";
     	try {
-//    		URL url = new URL("https://www.google.com/reader/api/0/subscription/list?output=json");
-//    		//URL url = new URL("https://www.google.com/reader/api/");
-//			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//			conn.setRequestMethod("GET");
-//			//conn.addRequestProperty("client_id", "Looks like I don't even need this...");
-//			conn.setRequestProperty("Authorization", "OAuth " + mToken);
-//			
-//			conn.connect();
-//			
-//			BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
-//    		Scanner scanner = new Scanner(in);
+    		URL url = new URL("https://www.google.com/reader/api/0/subscription/list?output=json");
+    		//URL url = new URL("https://www.google.com/reader/api/");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			//conn.addRequestProperty("client_id", "Looks like I don't even need this...");
+			conn.setRequestProperty("Authorization", "OAuth " + mToken);
 			
-			Scanner scanner = new Scanner(new FileInputStream("/mnt/sdcard/download/testFeeds/readerList.json"));
+			conn.connect();
+			
+			BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
+    		Scanner scanner = new Scanner(in);
+			
+			//Scanner scanner = new Scanner(new FileInputStream("/mnt/sdcard/download/testFeeds/readerList.json"));
 			//Scanner can only grab so much data at once, so immediately scanning to the end of the file
 			//won't work.  Here's a dumb workaround.
 			

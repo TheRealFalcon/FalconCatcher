@@ -189,7 +189,7 @@ public class GoogleSelectionActivity extends Activity {
 				//Its an entry
 				@SuppressWarnings("unchecked")  //Thats right
 				Map<String,String> currentItem = (Map<String,String>)getItem(position);
-				view = mInflater.inflate(R.layout.entry_list_item, null);
+				view = mInflater.inflate(R.layout.checkable_list_item, null);
 				TextView textView = (TextView)view.findViewById(R.id.list_item_text);
 				textView.setText(currentItem.get("title"));
 			}

@@ -1,5 +1,6 @@
 package com.falconware.falconcatcher;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -23,6 +24,7 @@ public class Database {
 		public static final String KEY="key";
 		public static final String VALUE="value";
 		public static final String APPLICATION_DIRECTORY="applicationDirectory";
+		public static final String CURRENT_FILE="currentFile";
 	}
 	
 	public class TableFeed {
@@ -111,7 +113,7 @@ public class Database {
 						"episodeTitle INTEGER, " +
 						"path STRING, " +
 						"displayOrder INTEGER, " +
-						"playIndex TEXT);";
+						"playIndex INTEGER);";
 		
 		//Queue: localPath, playIndex, order? 
 
@@ -187,6 +189,30 @@ public class Database {
 		return db.insert(TableFile.TABLE_NAME, null, insertValues);
 	}
 	
+	public long addFile(String episodeTitle, String path, int order) {
+		ContentValues insertValues = new ContentValues();
+		insertValues.put(TableFile.EPISODE_TITLE, episodeTitle);
+		insertValues.put(TableFile.PATH, path);
+		
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		Cursor cursor = db.rawQuery("SELECT _id, displayOrder FROM file WHERE displayOrder>=?", new String[] {Integer.toString(order)});
+		cursor.moveToFirst();
+		for (int index=0; index<cursor.getCount(); index++) {
+			long id = cursor.getLong(cursor.getColumnIndex(TableFile.ID));
+			int displayOrder = cursor.getInt(cursor.getColumnIndex(TableFile.DISPLAY_ORDER));
+			System.out.println("Add: Moving from " + displayOrder + " to " + (displayOrder+1));
+			SQLiteStatement statement = db.compileStatement("UPDATE file SET displayOrder=? WHERE _id=?");
+			statement.bindLong(1, displayOrder+1);
+			statement.bindLong(2, id);
+			statement.executeUpdateDelete();
+			cursor.moveToNext();
+		}
+		insertValues.put(TableFile.DISPLAY_ORDER, order);
+
+		//insertValues.put(TableFile.PLAY_INDEX, null);
+		return db.insert(TableFile.TABLE_NAME, null, insertValues);
+	}
+	
 	public Cursor getFeeds() {
 		String[] columns = new String[] {TableFeed.ID, TableFeed.URL, TableFeed.TITLE, TableFeed.IMAGE};
 		Cursor cursor = mHelper.getReadableDatabase().query(TableFeed.TABLE_NAME, columns, null, null, null, null, null);
@@ -224,10 +250,11 @@ public class Database {
 	}
 	
 	public Cursor getQueue() {
-		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT f._id, s.image, f.episodeTitle " +
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT f._id, f.path, f.episodeTitle, e.feedTitle " +
 				"FROM file f " +
 				"INNER JOIN episode e on e.title=f.episodeTitle " +
-				"INNER JOIN feed s on s.title=e.feedTitle", null);
+				//"INNER JOIN feed s on s.title=e.feedTitle " +
+				"ORDER BY displayOrder", null);
 		c.moveToFirst();
 		return c;
 		//mHelper.getReadableDatabase().rawQuery("SELECT ?.?, ?.? FROM ? INNER JOIN ? ON ?.?=?.?", 
@@ -236,10 +263,93 @@ public class Database {
 //				TableFile.})
 	}
 	
+	public Cursor getFile(String episodeTitle) {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT _id, episodeTitle, path, displayOrder, playIndex " +
+				"FROM file WHERE episodeTitle=?", new String[] {episodeTitle});
+		c.moveToFirst();
+		return c;
+	}
+	
+	public Cursor getFile(long id) {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT _id, episodeTitle, path, displayOrder, playIndex " +
+				"FROM file WHERE _id=?", new String[] {Long.toString(id)});
+		c.moveToFirst();
+		return c;
+	}
+	
+	public long getFileIdByDisplayOrder(long displayOrder) {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT _id FROM file where displayOrder=?", new String[] {Long.toString(displayOrder)});
+		if (c == null) {
+			return -1;
+		}
+		c.moveToFirst();
+		long id = c.getLong(c.getColumnIndex(TableFile.ID));
+		c.close();
+		return id;
+	}
+	
+	public void setFilePosition(long fileId, int pos) {
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		SQLiteStatement statement = db.compileStatement("UPDATE file SET playIndex=? WHERE _id=?");
+		statement.bindLong(1, pos);
+		statement.bindLong(2, fileId);
+		statement.executeUpdateDelete();
+	}
+	
+	public int getFilePosition(long fileId) {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT playIndex FROM file WHERE _id=?", new String[] {Long.toString(fileId)});
+		if (c.getCount() < 1) {
+			return -1;
+		}
+		c.moveToFirst();
+//		if (c.isNull(c.getColumnIndex(TableFile.PLAY_INDEX))) {
+//			return -1;
+//		}
+		int pos = c.getInt(c.getColumnIndex(TableFile.PLAY_INDEX));
+		c.close();
+		return pos;
+	}
+	
+	public void removeFile(String episodeTitle) {
+		//TODO: Need lots more error handling here
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		Cursor c = db.rawQuery("SELECT path, displayOrder FROM file WHERE episodeTitle=?", new String[] {episodeTitle});
+		c.moveToFirst();
+		String episodePath = c.getString(c.getColumnIndex(TableFile.PATH));
+		String orderNumber = c.getString(c.getColumnIndex(TableFile.DISPLAY_ORDER));
+		c.close();
+		new File(episodePath).delete();
+		SQLiteStatement statement = db.compileStatement("DELETE FROM file WHERE episodeTitle=?");
+		statement.bindString(1, episodeTitle);
+		statement.executeUpdateDelete();
+		
+		c = db.rawQuery("SELECT _id, displayOrder FROM file WHERE displayOrder>?", new String[] {orderNumber});
+		c.moveToFirst();
+		for (int index=0; index<c.getCount(); index++) {			
+			long id = c.getLong(c.getColumnIndex(TableFile.ID));
+			int initialOrder = c.getInt(c.getColumnIndex(TableFile.DISPLAY_ORDER));
+			System.out.println("Remove: Moving from " + initialOrder + " to " + (initialOrder-1));
+			statement = db.compileStatement("UPDATE file SET displayOrder=? WHERE _id=?");
+			statement.bindLong(1, initialOrder-1);
+			statement.bindLong(2, id);
+			statement.executeUpdateDelete();
+			c.moveToNext();
+		}
+		c.close();
+	}
+	
 	
 	public void removeFeed(String feedTitle) {
 		//TODO: REMOVE FROM QUEUE AND DELETE LOCAL FILE
 		SQLiteDatabase db = mHelper.getWritableDatabase();
+		Cursor episodeTitles = db.rawQuery("SELECT episodeTitle FROM episode WHERE feedTitle=?", new String[] {feedTitle});
+		episodeTitles.moveToFirst();
+		for (int index=0; index<episodeTitles.getCount(); index++) {
+			removeFile(episodeTitles.getString(0));
+			episodeTitles.moveToNext();
+		}
+		
+		
 		SQLiteStatement statement = db.compileStatement("DELETE FROM " + TableEpisode.TABLE_NAME + " WHERE " +
 				TableEpisode.FEED_TITLE + "=?");
 		statement.bindString(1, feedTitle);
@@ -287,6 +397,33 @@ public class Database {
 			db.insert(TableSettings.TABLE_NAME, null, insertValues);
 		}
 		return dir;
+	}
+	
+	public void setCurrentFile(long id) {
+		SQLiteDatabase db = mHelper.getWritableDatabase();
+		int currentFileCount = db.rawQuery("SELECT value FROM settings WHERE key='currentFile'", null).getCount();
+		if (currentFileCount < 1) {
+			ContentValues insertValues = new ContentValues();
+			insertValues.put(TableSettings.KEY, "currentFile");
+			insertValues.put(TableSettings.VALUE, id);
+			db.insert(TableSettings.TABLE_NAME, null, insertValues);
+		}
+		else if (currentFileCount == 1) {
+			SQLiteStatement statement = db.compileStatement("UPDATE settings SET value=? WHERE key='currentFile'");
+			statement.bindLong(1, id);
+			statement.executeUpdateDelete();
+		}
+		else {
+			System.err.println("Can't set current file.  Too many entries in the database.");
+		}
+		
+	}
+	
+	public long getCurrentFile() {
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT value FROM settings WHERE key='currentFile'", null);
+		c.moveToFirst();
+		long id = c.getLong(c.getColumnIndex(TableSettings.VALUE));
+		return id;
 	}
 	
 	private String decipherApplicationDirectory() {

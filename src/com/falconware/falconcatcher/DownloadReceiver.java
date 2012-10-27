@@ -14,14 +14,12 @@ public class DownloadReceiver extends BroadcastReceiver {// = new BroadcastRecei
 		long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
 		Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
 		cursor.moveToFirst();
-		System.out.println("Column title: " + cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)));
-		System.out.println("R.string.app_name: " + context.getString(R.string.app_name));
 		if (!cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)).equals(context.getString(R.string.app_name))) {
 			//Not our app!
 			System.out.println("Not our app!");
 			return;
 		}
-		if (DownloadManager.STATUS_SUCCESSFUL == cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
+		else if (DownloadManager.STATUS_SUCCESSFUL == cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
 			String description = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
 			String path = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
 			//String uri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));

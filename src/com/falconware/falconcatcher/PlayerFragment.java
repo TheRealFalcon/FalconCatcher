@@ -6,9 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,9 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.ToggleButton;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.falconware.falconcatcher.PlayerService.LocalBinder;
 
@@ -28,23 +32,26 @@ public class PlayerFragment extends Fragment {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			LocalBinder binder = (LocalBinder) service;
 			mService = binder.getService();
-			PlayerFragment.this.setButtonState();
-			//TODO: This seems smelly.  Verify this doesn't do screwy things after this view was destroyed.
-			mService.getPlayer().setOnPreparedListener(new OnPreparedListener() {				
-				@Override
-				public void onPrepared(MediaPlayer player) {
-					System.out.println("OnPrepared!");
-					PlayerFragment.this.setButtonState();
-				}
-			});
-			
-
+			System.out.println("service connected");
+			//PlayerFragment.this.setButtonState();
+			binder.setOnStateChangeListener(stateChangeListener);			
+//			binder.setOnTrackChangeListener(new PlayerService.OnTrackChangeListener() {				
+//				@Override
+//				public void updateUi(final int endPos) {
+//					// TODO Auto-generated method stub
+//					PlayerFragment.this.getActivity().runOnUiThread(new Runnable() {
+//						@Override
+//						public void run() {
+//							((SeekBar)mActivity.findViewById(R.id.seekBar)).setMax(endPos);
+//						}
+//					});
+//				}
+//			});
 		}
 		
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
-			// TODO Auto-generated method stub
-			
+			System.out.println("In onServiceDisconnected");
 		}
 	};
 
@@ -58,24 +65,40 @@ public class PlayerFragment extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
+		System.out.println("in onStart");
+		//setButtonState();
+		
 		Intent intent = new Intent(mActivity, PlayerService.class);
 		mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		
+		Intent playerIntent = new Intent(mActivity, PlayerService.class);
+		playerIntent.setAction(PlayerService.ACTION_CONNECT_UI);
+		mActivity.startService(playerIntent);
+		
 
 	}
 	
 	@Override
 	public void onStop() {
-		super.onStop();
-		mActivity.unbindService(mConnection);
+		System.out.println("in onStop");		
 		Intent playerIntent = new Intent(mActivity, PlayerService.class);
-		playerIntent.setAction(PlayerService.ACTION_DIE_IF_IDLE);
-		mActivity.startService(playerIntent);		
+		playerIntent.setAction(PlayerService.ACTION_LEAVE_UI);
+		mActivity.startService(playerIntent);
+		mActivity.unbindService(mConnection);
+		super.onStop();
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
-		setButtonState();
+//		System.out.println("in onResume");
+//		
+//		Intent intent = new Intent(mActivity, PlayerService.class);
+//		mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+//		
+//		Intent playerIntent = new Intent(mActivity, PlayerService.class);
+//		playerIntent.setAction(PlayerService.ACTION_CONNECT_UI);
+//		mActivity.startService(playerIntent);			
 	}
 
 	@Override
@@ -83,55 +106,112 @@ public class PlayerFragment extends Fragment {
 			Bundle savedInstanceState) {
 		LinearLayout layout = (LinearLayout)inflater.inflate(R.layout.player_fragment, container, false);
 		
-		//Not using xml callbacks because it looks for them in the acitivity...
-		Button button = (Button)layout.findViewById(R.id.play_or_pause_button);
-		button.setOnClickListener(new PlayOrPauseTrack());
+		//Not using xml callbacks because it looks for them in the activity...
+		Button playPauseButton = (Button)layout.findViewById(R.id.play_or_pause_button);
+		playPauseButton.setOnClickListener(playOrPauseTrack);
 		
-		//setButtonState();
-		Bundle bundle = getArguments();
-		if (bundle != null) {
-			boolean playing = getArguments().getBoolean("playing", false);
-			if (playing) {
-				((Button)layout.findViewById(R.id.play_or_pause_button)).setBackgroundResource(android.R.drawable.ic_media_pause);
-			}
-		}
+		Button fastForwardButton = (Button)layout.findViewById(R.id.fast_forward_button);
+		fastForwardButton.setOnClickListener(fastForwardTrack);
 		
-		//Do rewind, fastforward, and next
+		Button rewindButton = (Button)layout.findViewById(R.id.rewind_button);
+		rewindButton.setOnClickListener(rewindTrack);
+		
+		Button nextButton = (Button)layout.findViewById(R.id.next_button);
+		nextButton.setOnClickListener(nextTrack);
+		
+		SeekBar bar = (SeekBar)layout.findViewById(R.id.seekBar);
+		bar.setOnSeekBarChangeListener(changeSeek);
+		
+
 		return layout;
 	}
 	
-	private void setButtonState() {
-		if (mService == null) {
-			return;
-		}
-		
-		if (mService.getPlayer().isPlaying()) {
-			((Button)mActivity.findViewById(R.id.play_or_pause_button)).setBackgroundResource(android.R.drawable.ic_media_pause);
-		}
-		else {
-			((Button)mActivity.findViewById(R.id.play_or_pause_button)).setBackgroundResource(android.R.drawable.ic_media_play);
-		}
-	}
+//	private void setButtonState() {
+//		if (mService == null || mActivity.findViewById(R.id.play_or_pause_button) == null) {
+//			return;
+//		}
+//		
+//		boolean isPlaying = mService.getPlayer().isPlaying();
+//		((ToggleButton)mActivity.findViewById(R.id.play_or_pause_button)).setChecked(isPlaying);
+//	}
 	
-	private class PlayOrPauseTrack implements OnClickListener {
+	private OnClickListener playOrPauseTrack = new OnClickListener() {
 		@Override
 		public void onClick(View view) {
 			Intent playerIntent = new Intent(mActivity, PlayerService.class);
-			Button button = (Button)view;
-
-			if (((String)button.getTag()).equals(getString(R.string.button_play))) {
-				playerIntent.setAction(PlayerService.ACTION_PLAY);
-				button.setBackgroundResource(android.R.drawable.ic_media_pause);
-				button.setTag(getString(R.string.button_pause));    		
+			ToggleButton button = (ToggleButton)view;
+			if (mService.getPlayer().isPlaying()) {
+				button.setChecked(false);
+				playerIntent.setAction(PlayerService.ACTION_PAUSE);
 			}
 			else {
-				playerIntent.setAction(PlayerService.ACTION_PAUSE);
-				button.setBackgroundResource(android.R.drawable.ic_media_play);
-				button.setTag(getString(R.string.button_play));
+				button.setChecked(true);
+				playerIntent.setAction(PlayerService.ACTION_RESUME);				
 			}
 			mActivity.startService(playerIntent);
 		}
-	}
+	};
+	
+	private OnClickListener fastForwardTrack = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			Intent playerIntent = new Intent(mActivity, PlayerService.class);
+			playerIntent.setAction(PlayerService.ACTION_FAST_FORWARD);
+			mActivity.startService(playerIntent);
+		}
+	};
+	
+	private OnClickListener rewindTrack = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			Intent playerIntent = new Intent(mActivity, PlayerService.class);
+			playerIntent.setAction(PlayerService.ACTION_REWIND);
+			mActivity.startService(playerIntent);
+		}
+	};
+	
+	private OnClickListener nextTrack = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			Intent playerIntent = new Intent(mActivity, PlayerService.class);
+			playerIntent.setAction(PlayerService.ACTION_NEXT_TRACK);
+			mActivity.startService(playerIntent);
+		}
+	};
+	
+	private OnSeekBarChangeListener changeSeek = new OnSeekBarChangeListener() {
+		private boolean wasPlaying;
+		private MediaPlayer player;
+		
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			if (wasPlaying) {
+				//player.start();
+				Intent playerIntent = new Intent(mActivity, PlayerService.class);
+				playerIntent.setAction(PlayerService.ACTION_RESUME);
+				mActivity.startService(playerIntent);
+			}
+		}
+		
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			player = mService.getPlayer();
+			wasPlaying = player.isPlaying();
+			if (wasPlaying) {
+				Intent playerIntent = new Intent(mActivity, PlayerService.class);
+				playerIntent.setAction(PlayerService.ACTION_PAUSE);
+				mActivity.startService(playerIntent);
+				//player.pause();
+			}			
+		}
+		
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			if (fromUser) {
+				player.seekTo(progress);
+			}
+		}
+	};
     
     public void nextTrack(View view) {
     	System.out.println("Next track");
@@ -140,4 +220,102 @@ public class PlayerFragment extends Fragment {
     public void fastForwardTrack(View view) {
     	System.out.println("Fast forward track");
     }
+    
+    private PlayerService.OnStateChangeListener stateChangeListener = new PlayerService.OnStateChangeListener() {	
+		private Thread mUpdateThread = new Thread();
+		private boolean mConnected;
+		private final Handler mHandler = new Handler();
+		//private final MediaPlayer player = mService.getPlayer();
+		
+		
+		@Override
+		public void setPlaying(final boolean playing, final int endPos) {
+			final ToggleButton button = (ToggleButton)mActivity.findViewById(R.id.play_or_pause_button);
+			final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);			
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					button.setChecked(playing);
+					if (endPos > -1) {
+						bar.setMax(endPos);
+					}
+					if (playing) {
+						//if (!mUpdateThread.isAlive()) {
+						
+						startUpdating();
+							
+						//}
+					}
+				}
+			});	
+		}
+		
+		@Override
+		public void unbind() {
+			//updateThread.interrupt();
+			//mConnected = false;
+			mUpdateThread.interrupt();
+		}
+		
+//		@Override
+//		public void bind(int endPos) {
+//			mConnected = true;
+//			SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
+//			if (bar.getMax() != endPos) {
+//				System.out.println("Bar max: " + bar.getMax());
+//				System.out.println("endPos: " + endPos);
+//				bar.setMax(endPos);	
+//			}
+//			//setSeekPosition(currentPos, endPos);
+//			//startUpdating();
+//						
+//		}
+		
+		@Override
+		public void setSeekPosition(final int currentPos) { //, int endPos) {
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
+					//bar.setMax(endPos);
+					bar.setProgress(currentPos);
+				}
+			});
+		}
+		
+		private void startUpdating() {
+			final MediaPlayer player = mService.getPlayer();
+			if (player == null) {
+				return;
+			}
+			//mConnected = true;
+			final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
+			bar.setMax(player.getDuration());
+			mUpdateThread = new Thread(new Runnable() {
+				public void run() {					
+					while (true) {
+						if (mService.isReady() && mService.isPlaying()) {
+							mHandler.post(new Runnable() {
+								public void run() {
+									//System.out.println("Once per second");								
+									bar.setProgress(player.getCurrentPosition());
+									System.out.println("bar max: " + bar.getMax());
+								}
+							});
+						}
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							//e.printStackTrace();
+							return;
+						}
+
+					}
+				}
+			});
+			mUpdateThread.setDaemon(true);
+			mUpdateThread.start();
+		}
+	};
 }

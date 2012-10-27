@@ -21,20 +21,6 @@ public class DownloadService extends IntentService {
 		super("DownloadService");
 	}
 	
-//    @Override
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//    	final int id = startId;
-//    	new AsyncTask<Intent, Void, Void>() {
-//			@Override
-//			protected Void doInBackground(Intent... intents) {
-//				Intent intent = intents[0];
-//				handleIntent(intent, id);
-//				return null;
-//			}
-//		}.execute(intent);
-//    	return START_REDELIVER_INTENT;
-//    }
-	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -47,8 +33,8 @@ public class DownloadService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		String action = intent.getAction();
 		if (action.equals(ACTION_DOWNLOAD)) {
-			String episodeId = intent.getStringExtra("episodeId");
-			downloadEpisode(episodeId);
+			String episodeTitle = intent.getStringExtra("episodeTitle");
+			downloadEpisode(episodeTitle);
 		}
 		else if (action.equals(ACTION_SCHEDULE)) {
 			
@@ -59,13 +45,10 @@ public class DownloadService extends IntentService {
 	private void downloadEpisode(String episodeTitle) {
 		Database db = new Database(this);
 		Cursor episodeCursor = db.getEpisode(episodeTitle);
-		//String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
-		String url = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.URL));
-		
-		//String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
-		//Cursor feedCursor = db.getFeed(feedId);
+		String url = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.URL));		
 		String feedTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_TITLE));
-		String feedDir = sanitizeDir(feedTitle);
+		String feedDir = sanitizePath(feedTitle);
+		episodeCursor.close();
 		
 		String downloadDirectory = new Database(this).getApplicationDirectory() + feedDir + "/";
 		File downloadDir = new File(downloadDirectory);
@@ -74,7 +57,7 @@ public class DownloadService extends IntentService {
 			System.err.println("Tried to create: " + downloadDir);
 		}
 		Uri currentUri = Uri.parse(url);
-		String filename = currentUri.getLastPathSegment();
+		String filename = sanitizePath(currentUri.getLastPathSegment());
 		
 		//TODO: Check that URI is valid.  DownloadManager is too stupid to know that a URI is invalid
 		final String finalDestination = downloadDir + "/" + filename;
@@ -97,7 +80,7 @@ public class DownloadService extends IntentService {
 		manager.enqueue(request);
 	}
 	
-	private String sanitizeDir(String title) {
+	private String sanitizePath(String title) {
 		return title.replaceAll("[\"|\\\\?*<\":>+\\[\\]/']", "");
 	}
 	

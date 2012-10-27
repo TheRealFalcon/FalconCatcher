@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+        
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/main_audio_view"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal" 
@@ -14,14 +23,14 @@
             android:layout_margin="5dp"
             android:background="@android:drawable/ic_media_rew"
              />  
-        <Button
+        <ToggleButton
             android:id="@+id/play_or_pause_button"
             android:layout_width="50dp"
             android:layout_height="50dp" 
-            android:layout_margin="5dp"
-            
-            android:background="@android:drawable/ic_media_play"
-            android:tag="@string/button_play"
+            android:layout_margin="5dp" 
+            android:textOn=""
+            android:textOff=""           
+            android:background="@drawable/playpause"
              />
         <Button
             android:id="@+id/fast_forward_button"
@@ -38,3 +47,4 @@
             android:background="@android:drawable/ic_media_next" 
             android:onClick="nextTrack" />
     </LinearLayout>
+</LinearLayout>

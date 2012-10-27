@@ -15,8 +15,8 @@ public class SubscriptionsAdapter extends SimpleCursorTreeAdapter {
 	private Database mDb;
 
 	public SubscriptionsAdapter(Context context, Cursor cursor, Database db) {
-		super(context, cursor, R.layout.group_row, new String[] { "image", "title" },
-				new int[] { R.id.group_image, R.id.group_name }, R.layout.child_row, new String[] {"title"}, 
+		super(context, cursor, R.layout.subscription_group_row, new String[] { "image", "title" },
+				new int[] { R.id.group_image, R.id.group_name }, R.layout.subscription_child_row, new String[] {"title"}, 
 				new int[] {R.id.grp_child});
 		mDb = db;
 		setViewBinder(new ViewBinder() {			

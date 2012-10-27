@@ -1,19 +1,24 @@
 
 package com.falconware.falconcatcher;
 
-import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.TextView;
+
+import com.falconware.falconcatcher.Database.TableEpisode;
+import com.falconware.falconcatcher.Database.TableFile;
 
 
 public class SubscriptionsFragment extends Fragment {
@@ -42,6 +47,19 @@ public class SubscriptionsFragment extends Fragment {
 		view.setAdapter(mAdapter);
 
 		//new DownloadFeedTask(currentActivity, mDb, view).execute("http://10.0.2.2:8080/freakonomics.xml");
+		view.setOnChildClickListener(new OnChildClickListener() {			
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+				Cursor episodeCursor = mAdapter.getChild(groupPosition, childPosition);
+				String description = episodeCursor.getString(episodeCursor.getColumnIndex(TableEpisode.DESCRIPTION));
+				Dialog dialog = new Dialog(mActivity);
+				TextView html = new TextView(mActivity);
+				html.setText(Html.fromHtml(description));
+				dialog.setContentView(html);
+				dialog.show();
+				return true;
+			}
+		});
 		return view;
 	}
 	
@@ -70,17 +88,23 @@ public class SubscriptionsFragment extends Fragment {
 	    System.out.println("Selected child: " + mSelectedChildRow);
 	}
 	
+	private void downloadFile(String episodeTitle) {
+		if (mDb.getFile(episodeTitle).getCount() > 0) {
+			mDb.removeFile(episodeTitle);
+		}
+		Intent intent = new Intent(mActivity, DownloadService.class);
+		intent.setAction(DownloadService.ACTION_DOWNLOAD);
+		intent.putExtra("episodeTitle", episodeTitle);
+		mActivity.startService(intent);	
+	}
+	
 	//TODO: Put the logic to get the file path in a common place
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		String itemTitle = item.getTitle().toString();
 		if (itemTitle.equals(getString(R.string.menu_download))) {
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-			Intent intent = new Intent(mActivity, DownloadService.class);
-			intent.setAction(DownloadService.ACTION_DOWNLOAD);
-			intent.putExtra("episodeId", episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE)));
-			//UNCOMMENT THIS TO DOWNLOAD!!!!!!!
-			mActivity.startService(intent);			
+			downloadFile(episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE)));
 		}
 		else if (itemTitle.equals(getString(R.string.menu_unsubscribe))) {
 			Cursor cursor = mAdapter.getGroup(mSelectedGroupRow);
@@ -89,29 +113,18 @@ public class SubscriptionsFragment extends Fragment {
 			mAdapter.notifyDataSetChanged();
 		}
 		else if (itemTitle.equals(getString(R.string.menu_play))) {
-			//TODO: THIS SECTION NEEDS TO BE FIXED TO GET THE DOWNLOADED FILE INSTEAD OF 'GUESSING'
-			
 			Cursor episodeCursor = mAdapter.getChild(mSelectedGroupRow, mSelectedChildRow);
-			//String feedId = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_ID));
+			//String feedTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_TITLE));
 			String episodeTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.TITLE));
+			Cursor fileCursor = mDb.getFile(episodeTitle);
+			//String filename = fileCursor.getString(fileCursor.getColumnIndex(Database.TableFile.PATH));
+			fileCursor.close();
 			
-			//Cursor feedCursor = mDb.getFeed(feedId);
-			String feedTitle = episodeCursor.getString(episodeCursor.getColumnIndex(Database.TableEpisode.FEED_TITLE));
+			//System.out.println("Playing file: " + filename);
 			
-			System.out.println("Playing file: " + mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3");
-			//String filename = "/storage/sdcard0/FalconCatcher/All About Android/aaa0078.mp3"; 
-			String filename = mDb.getApplicationDirectory() + feedTitle + "/" + episodeTitle + ".mp3";
-			
-//			Button button = (Button)mActivity.findViewById(R.id.play_or_pause_button);
-//			button.setBackgroundResource(android.R.drawable.ic_media_pause);
-//			button.setTag(getString(R.string.button_pause));
-			
-			Intent playerIntent = new Intent(mActivity, PlayerService.class);
-			playerIntent.setAction(PlayerService.ACTION_PLAY);
-			playerIntent.putExtra("filename", filename);
-			mActivity.startService(playerIntent);
-			
-			mActivity.startPlayer();
+			long fileId = fileCursor.getLong(fileCursor.getColumnIndex(TableFile.ID));
+			//mActivity.playFile(feedTitle, episodeTitle, filename);
+			mActivity.playFile(fileId);
 		}
 		return super.onContextItemSelected(item);
 	}
