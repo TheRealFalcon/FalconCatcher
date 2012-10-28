@@ -422,6 +422,10 @@ public class Database {
 	public long getCurrentFile() {
 		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT value FROM settings WHERE key='currentFile'", null);
 		c.moveToFirst();
+		if (c.getCount() < 1) {
+			System.err.println("getCurrentFile returned less than 1");
+			return -1;
+		}
 		long id = c.getLong(c.getColumnIndex(TableSettings.VALUE));
 		return id;
 	}

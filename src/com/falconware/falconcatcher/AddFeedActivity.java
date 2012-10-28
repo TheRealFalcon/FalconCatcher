@@ -8,6 +8,7 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Pair;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 public class AddFeedActivity extends Activity implements OnTaskCompleted {
 	private ArrayList<Map<String,String> > mEntryList;
+	private ProgressDialog mPopupDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class AddFeedActivity extends Activity implements OnTaskCompleted {
     }
     
     public void onGooglePressed(View view) {
+    	mPopupDialog = ProgressDialog.show(this, "Connecting", "Obtaining Google Reader entries");
     	mEntryList = new ArrayList<Map<String,String> >();
     	//parseReader(null);  //delete me
 
@@ -70,6 +73,9 @@ public class AddFeedActivity extends Activity implements OnTaskCompleted {
     }
     
     public void onTaskCompleted(boolean result) {
+    	if (mPopupDialog != null) {
+			mPopupDialog.dismiss();
+		}
     	if (result) {
     		Intent intent = new Intent(this, GoogleSelectionActivity.class);
     		intent.putExtra("entryList", mEntryList);

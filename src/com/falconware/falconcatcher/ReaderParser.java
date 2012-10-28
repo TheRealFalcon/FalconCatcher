@@ -20,7 +20,7 @@ import android.os.AsyncTask;
 
 public class ReaderParser extends AsyncTask<Void, Void, Boolean>
 {
-	private Context mContext;
+	//private Context mContext;
 	private OnTaskCompleted mListener;
 	private ArrayList<Map<String,String> > mEntryList;
 	private ProgressDialog mDialog;
@@ -28,7 +28,7 @@ public class ReaderParser extends AsyncTask<Void, Void, Boolean>
 	
 	
 	public ReaderParser(AddFeedActivity caller, ArrayList<Map<String,String> > entryList, String token) {
-		mContext = caller;
+		//mContext = caller;
 		mListener = caller;
 		mEntryList = entryList;
 		mToken = token;
@@ -36,7 +36,7 @@ public class ReaderParser extends AsyncTask<Void, Void, Boolean>
 	
 	@Override
 	protected void onPreExecute() {
-		mDialog = ProgressDialog.show(mContext, "Connecting", "Obtaining Google Reader entries");
+		
 	}
 	
 	@Override
@@ -46,9 +46,7 @@ public class ReaderParser extends AsyncTask<Void, Void, Boolean>
 	
 	@Override
 	protected void onPostExecute(Boolean result) {
-		if (mDialog != null) {
-			mDialog.dismiss();
-		}
+		
 		if (mListener != null) {
 			mListener.onTaskCompleted(result);
 		}
