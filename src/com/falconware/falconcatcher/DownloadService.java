@@ -81,7 +81,8 @@ public class DownloadService extends IntentService {
 	}
 	
 	private String sanitizePath(String title) {
-		return title.replaceAll("[\"|\\\\?*<\":>+\\[\\]/']", "");
+		String newString = title.replaceAll(" ", "_");
+		return newString.replaceAll("[\"|\\\\?*<\":>+\\[\\]/']", "");
 	}
 	
 

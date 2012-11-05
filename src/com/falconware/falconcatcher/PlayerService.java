@@ -97,6 +97,9 @@ public class PlayerService extends Service {
 
 	
 	protected void handleIntent(Intent intent, int id) {
+		if (intent == null) {
+			return;
+		}
 		String intentAction = intent.getAction();
 		if (intentAction.equals(ACTION_PLAY_LOCAL)) {
 			long fileId = intent.getLongExtra("id", BAD_ID);			
@@ -106,6 +109,10 @@ public class PlayerService extends Service {
 			}
 			mCurrentFileId = fileId;
 			if (fileId == mDb.getCurrentFile()) {
+				if (mPlayer.isPlaying()) {
+					//They just selected an already playing track
+					return;
+				}
 				prepareFile(mDb.getFilePosition(fileId));
 			}			
 			else {
@@ -175,8 +182,9 @@ public class PlayerService extends Service {
 			
 		}
 		else if (intentAction.equals(ACTION_LEAVE_UI)) {
+			mStateListener.unbind();
 			if (mPlayer.isPlaying()) {
-				mStateListener.unbind();
+				//mStateListener.unbind();
 			}
 			else {
 				saveCurrentPosition();
@@ -199,16 +207,18 @@ public class PlayerService extends Service {
 				currentPosition = getCurrentPosition();
 			}
 			//mStateListener.bind(mPlayer.getDuration());
-			while (mStateListener == null) {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//			while (mStateListener == null) {
+//				try {
+//					Thread.sleep(10);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+			if (mStateListener != null) {
+				mStateListener.setPlaying(mPlayer.isPlaying(), mPlayer.getDuration());
+				mStateListener.setSeekPosition(currentPosition);			
 			}
-			mStateListener.setPlaying(mPlayer.isPlaying(), mPlayer.getDuration());
-			mStateListener.setSeekPosition(currentPosition);			
 		}
 	}
 	
@@ -223,6 +233,7 @@ public class PlayerService extends Service {
 		setNotification(episodeName);		
 		String filename = fileCursor.getString(fileCursor.getColumnIndex(TableFile.PATH));
 		fileCursor.close();
+		System.out.println("Preaparing: " + filename);
 		
 		if (filename != null) {
 			try {
@@ -232,6 +243,7 @@ public class PlayerService extends Service {
 				mPlayer.prepare();
 
 			} catch (IOException e) {
+				//TODO: Need better exception handling here
 				e.printStackTrace();			
 			}
 		}
@@ -245,7 +257,9 @@ public class PlayerService extends Service {
 	
 	private void playFile() {
 		mPlayer.start();
-		mStateListener.setPlaying(true, mPlayer.getDuration());	
+		if (mStateListener != null) {
+			mStateListener.setPlaying(true, mPlayer.getDuration());	
+		}
 		//mTrackListener.updateUi(mPlayer.getDuration());
 	}
 	

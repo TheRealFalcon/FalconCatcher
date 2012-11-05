@@ -34,7 +34,11 @@ public class PlayerFragment extends Fragment {
 			mService = binder.getService();
 			System.out.println("service connected");
 			//PlayerFragment.this.setButtonState();
-			binder.setOnStateChangeListener(stateChangeListener);			
+			binder.setOnStateChangeListener(stateChangeListener);	
+			
+			Intent playerIntent = new Intent(mActivity, PlayerService.class);
+			playerIntent.setAction(PlayerService.ACTION_CONNECT_UI);
+			mActivity.startService(playerIntent);
 //			binder.setOnTrackChangeListener(new PlayerService.OnTrackChangeListener() {				
 //				@Override
 //				public void updateUi(final int endPos) {
@@ -71,9 +75,7 @@ public class PlayerFragment extends Fragment {
 		Intent intent = new Intent(mActivity, PlayerService.class);
 		mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 		
-		Intent playerIntent = new Intent(mActivity, PlayerService.class);
-		playerIntent.setAction(PlayerService.ACTION_CONNECT_UI);
-		mActivity.startService(playerIntent);
+		
 		
 
 	}
@@ -229,12 +231,12 @@ public class PlayerFragment extends Fragment {
 		
 		
 		@Override
-		public void setPlaying(final boolean playing, final int endPos) {
-			final ToggleButton button = (ToggleButton)mActivity.findViewById(R.id.play_or_pause_button);
-			final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);			
+		public void setPlaying(final boolean playing, final int endPos) {		
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
+					ToggleButton button = (ToggleButton)mActivity.findViewById(R.id.play_or_pause_button);
+					SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);	
 					button.setChecked(playing);
 					if (endPos > -1) {
 						bar.setMax(endPos);
@@ -254,6 +256,7 @@ public class PlayerFragment extends Fragment {
 		public void unbind() {
 			//updateThread.interrupt();
 			//mConnected = false;
+			System.out.println("Calling unbind");
 			mUpdateThread.interrupt();
 		}
 		
@@ -283,16 +286,15 @@ public class PlayerFragment extends Fragment {
 			});
 		}
 		
-		private void startUpdating() {
-			final MediaPlayer player = mService.getPlayer();
-			if (player == null) {
-				return;
-			}
-			//mConnected = true;
-			final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
-			bar.setMax(player.getDuration());
+		private void startUpdating() {			
 			mUpdateThread = new Thread(new Runnable() {
-				public void run() {					
+				public void run() {		
+					final MediaPlayer player = mService.getPlayer();
+					if (player == null) {
+						return;
+					}
+					final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
+					bar.setMax(player.getDuration());
 					while (true) {
 						if (mService.isReady() && mService.isPlaying()) {
 							mHandler.post(new Runnable() {

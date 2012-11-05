@@ -255,7 +255,7 @@ public class Database {
 				"INNER JOIN episode e on e.title=f.episodeTitle " +
 				//"INNER JOIN feed s on s.title=e.feedTitle " +
 				"ORDER BY displayOrder", null);
-		c.moveToFirst();
+		//c.moveToFirst();
 		return c;
 		//mHelper.getReadableDatabase().rawQuery("SELECT ?.?, ?.? FROM ? INNER JOIN ? ON ?.?=?.?", 
 //				new String[] {TableFeed.TABLE_NAME, TableFeed.IMAGE, TableFile.TABLE_NAME, TableFile.EPISODE_NAME,
