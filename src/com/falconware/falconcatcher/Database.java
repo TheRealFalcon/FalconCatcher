@@ -17,6 +17,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Environment;
 
 
+//TODO: Use ids for everything.  A feed with the same episode twice will wreak havoc otherwise.
+//TODO: This file needs A LOT of help
 public class Database {
 	public class TableSettings {
 		private TableSettings() {}
@@ -250,17 +252,13 @@ public class Database {
 	}
 	
 	public Cursor getQueue() {
-		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT f._id, f.path, f.episodeTitle, e.feedTitle " +
+		//TODO: SELECT DISTINCT is a hack.  Title can't function as a primary key
+		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT DISTINCT f._id, f.path, f.episodeTitle, e.feedTitle " +
 				"FROM file f " +
 				"INNER JOIN episode e on e.title=f.episodeTitle " +
-				//"INNER JOIN feed s on s.title=e.feedTitle " +
 				"ORDER BY displayOrder", null);
 		//c.moveToFirst();
 		return c;
-		//mHelper.getReadableDatabase().rawQuery("SELECT ?.?, ?.? FROM ? INNER JOIN ? ON ?.?=?.?", 
-//				new String[] {TableFeed.TABLE_NAME, TableFeed.IMAGE, TableFile.TABLE_NAME, TableFile.EPISODE_NAME,
-//				TableFeed.TABLE_NAME, TableFile.TABLE_NAME,
-//				TableFile.})
 	}
 	
 	public Cursor getFile(String episodeTitle) {
