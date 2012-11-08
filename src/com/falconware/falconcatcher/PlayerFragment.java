@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
@@ -211,6 +212,7 @@ public class PlayerFragment extends Fragment {
 		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 			if (fromUser) {
 				player.seekTo(progress);
+				((TextView)mActivity.findViewById(R.id.timeElapsed)).setText(msToTime(progress));
 			}
 		}
 	};
@@ -223,6 +225,13 @@ public class PlayerFragment extends Fragment {
     	System.out.println("Fast forward track");
     }
     
+    private String msToTime(int ms) {
+    	int timeInSeconds = ms / 1000;
+    	int minutes = timeInSeconds / 60;
+    	int seconds = timeInSeconds - (minutes * 60);
+    	return "" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    }
+    
     private PlayerService.OnStateChangeListener stateChangeListener = new PlayerService.OnStateChangeListener() {	
 		private Thread mUpdateThread = new Thread();
 		private boolean mConnected;
@@ -232,14 +241,20 @@ public class PlayerFragment extends Fragment {
 		
 		@Override
 		public void setPlaying(final boolean playing, final int endPos) {		
+//			int endInSeconds = endPos / 1000;  //ms to s
+//			final int endMinutes = endInSeconds / 60;
+//			final int endSeconds = endInSeconds - (endMinutes * 60);
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					ToggleButton button = (ToggleButton)mActivity.findViewById(R.id.play_or_pause_button);
-					SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);	
+					ToggleButton button = (ToggleButton)mActivity.findViewById(R.id.play_or_pause_button);					
 					button.setChecked(playing);
 					if (endPos > -1) {
+						SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);	
 						bar.setMax(endPos);
+						
+						TextView end = (TextView)mActivity.findViewById(R.id.timeLeft);
+						end.setText(msToTime(endPos));
 					}
 					if (playing) {
 						//if (!mUpdateThread.isAlive()) {
@@ -276,12 +291,22 @@ public class PlayerFragment extends Fragment {
 		
 		@Override
 		public void setSeekPosition(final int currentPos) { //, int endPos) {
+//			int elapsedInSeconds = currentPos / 1000;  //ms to s
+//			final int elapsedMinutes = elapsedInSeconds / 60;
+//			final int elapsedSeconds = elapsedInSeconds - (elapsedMinutes * 60);
 			mHandler.post(new Runnable() {
 				@Override
-				public void run() {
+				public void run() {					
+					TextView elapsed = (TextView)mActivity.findViewById(R.id.timeElapsed);
 					SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
-					//bar.setMax(endPos);
-					bar.setProgress(currentPos);
+					
+					if (elapsed !=null && bar != null) {
+						//TextView end = (TextView)mActivity.findViewById(R.id.timeLeft);
+						elapsed.setText(msToTime(currentPos));
+						//left.setText(bar.getMax())					
+						
+						bar.setProgress(currentPos);
+					}
 				}
 			});
 		}
@@ -293,17 +318,18 @@ public class PlayerFragment extends Fragment {
 					if (player == null) {
 						return;
 					}
-					final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
-					bar.setMax(player.getDuration());
+					//final SeekBar bar = (SeekBar)mActivity.findViewById(R.id.seekBar);
+					//bar.setMax(player.getDuration());
 					while (true) {
 						if (mService.isReady() && mService.isPlaying()) {
-							mHandler.post(new Runnable() {
-								public void run() {
-									//System.out.println("Once per second");								
-									bar.setProgress(player.getCurrentPosition());
-									System.out.println("bar max: " + bar.getMax());
-								}
-							});
+							setSeekPosition(player.getCurrentPosition());
+//							mHandler.post(new Runnable() {
+//								public void run() {
+//									//System.out.println("Once per second");								
+//									bar.setProgress(player.getCurrentPosition());
+//									System.out.println("bar max: " + bar.getMax());
+//								}
+//							});
 						}
 						try {
 							Thread.sleep(1000);
