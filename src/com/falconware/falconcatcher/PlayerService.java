@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -69,6 +68,13 @@ public class PlayerService extends Service {
 				return true;
 			}
 		});
+		
+		mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {			
+			@Override
+			public void onCompletion(MediaPlayer arg0) {
+				playNextTrack();				
+			}
+		});
     }
 
     @Override
@@ -93,6 +99,28 @@ public class PlayerService extends Service {
 			stopSelf(startId);
 		}
     	return START_STICKY;
+    }
+    
+    public void playNextTrack() {
+    	if (mCurrentFileId == BAD_ID) {
+			mCurrentFileId = mDb.getCurrentFile();
+			if (mCurrentFileId == BAD_ID) {
+				return;
+			}				
+		}
+		//Get new file
+		Cursor c = mDb.getFile(mCurrentFileId);
+		int displayOrder = c.getInt(c.getColumnIndex(Database.TableFile.DISPLAY_ORDER));
+		c.close();
+		long fileId = mDb.getFileIdByDisplayOrder(displayOrder+1);
+		if (fileId == -1) {
+			return;
+		}
+		
+		mCurrentFileId = fileId;
+		mDb.setCurrentFile(fileId);
+		prepareFile();						
+		playFile();
     }
 
 	
@@ -173,13 +201,7 @@ public class PlayerService extends Service {
 			}
 		}
 		else if (intentAction.equals(ACTION_NEXT_TRACK)) {
-//			if (mCurrentFileId == BAD_ID) {
-//				mCurrentFileId = mDb.getCurrentFile();
-//				if (mCurrentFileId == BAD_ID) {
-//					return;
-//				}				
-//			}
-			
+			playNextTrack();
 		}
 		else if (intentAction.equals(ACTION_LEAVE_UI)) {
 			mStateListener.unbind();
