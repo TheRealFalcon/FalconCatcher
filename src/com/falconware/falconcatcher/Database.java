@@ -277,7 +277,7 @@ public class Database {
 	
 	public long getFileIdByDisplayOrder(long displayOrder) {
 		Cursor c = mHelper.getReadableDatabase().rawQuery("SELECT _id FROM file where displayOrder=?", new String[] {Long.toString(displayOrder)});
-		if (c == null) {
+		if (c == null || c.getCount() < 1) {
 			return -1;
 		}
 		c.moveToFirst();
