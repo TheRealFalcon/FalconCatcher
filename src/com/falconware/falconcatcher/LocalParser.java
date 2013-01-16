@@ -23,7 +23,7 @@ public class LocalParser {
 	private Database mDb;
 	private XmlPullParser mParser;
 	
-	public LocalParser(String urlString, Context context, Database db) throws XmlPullParserException, IOException
+	public LocalParser(String urlString, Database db) throws XmlPullParserException, IOException
 	{
 		//mFeedUrl = urlString;
 		//mTitle = "";

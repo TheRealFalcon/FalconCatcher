@@ -41,7 +41,7 @@ public class DownloadFeedTask extends AsyncTask<Pair<String,String>, String, Boo
 			publishProgress("Importing " + name);
 
 			try {
-				new LocalParser(url, mActivity, mDb);
+				new LocalParser(url, mDb);
 				//publishProgress("Successfully parsed " + name);
 			} catch (Exception e) { //TODO: Don't catch top level Exception
 				e.printStackTrace();

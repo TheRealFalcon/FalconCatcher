@@ -6,10 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,33 +28,33 @@ public class GoogleSelectionActivity extends Activity {
 	private ActionMode mActionMode;
 	private Database mDb;
 	private ListView mView;
-	
 
-	
+
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
+
 		//getUserCredentials();
-		
+
 		mActionMode = null;
 		mDb = new Database(this);
 		//ListView view = getListView();
 		mView = new ListView(this);
 		mView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);		
-		
+
 		//http://www.google.com/reader/api/0/subscription/list?output=json
-    	//List<Map<String,String> > entryList = parseReader();
+		//List<Map<String,String> > entryList = parseReader();
 		final List<Map<String,String> > entryList = (ArrayList<Map<String,String> >)getIntent().getSerializableExtra("entryList");
-    	GoogleAdapter adapter = new GoogleAdapter(getIntent().getBooleanExtra("useCategories", false));
-    	
-    	for (Map<String,String> entry : entryList) {
-    		adapter.addEntry(entry);
-    	}    	
-    	
-    	mView.setAdapter(adapter);
-    	mView.setOnItemClickListener(new OnItemClickListener() {
+		GoogleAdapter adapter = new GoogleAdapter(getIntent().getBooleanExtra("useCategories", false));
+
+		for (Map<String,String> entry : entryList) {
+			adapter.addEntry(entry);
+		}    	
+
+		mView.setAdapter(adapter);
+		mView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -81,9 +77,9 @@ public class GoogleSelectionActivity extends Activity {
 				if (checkedCount > 0) {
 					if (mActionMode == null) {
 						mActionMode = startActionMode(new ModeCallback());
-						
+
 					}
-					
+
 					switch (checkedCount) {
 					case 1:
 						mActionMode.setTitle("1 selected");
@@ -93,31 +89,31 @@ public class GoogleSelectionActivity extends Activity {
 						break;
 					}
 				}
-				
+
 				else {
 					mActionMode.finish();
 					//mActionMode = null;
 				}
 			}
 		});
-    	setContentView(mView);
+		setContentView(mView);
 	}
-	
 
-	
+
+
 	private class GoogleAdapter extends BaseAdapter {
 		private List<String> mCategories;
 		private List<Map<String,String> > mEntries;
 		private LayoutInflater mInflater;
 		private boolean mUseCategories;
-		
+
 		public GoogleAdapter(boolean useCategories) {
 			mCategories = new LinkedList<String>();
 			mEntries = new ArrayList<Map<String,String> >();
 			mInflater = getLayoutInflater();
 			mUseCategories = useCategories;
 		}
-		
+
 		public void addEntry(Map<String,String> entry) {
 			//mEntries.add(entry);
 			if (mUseCategories) {
@@ -133,7 +129,7 @@ public class GoogleSelectionActivity extends Activity {
 				mEntries.add(entry);
 			}
 		}
-		
+
 		private void addCategory(String category) {
 			if (mCategories.contains(category)) {
 				return;
@@ -142,11 +138,11 @@ public class GoogleSelectionActivity extends Activity {
 			//TODO: This is probably really inefficient...
 			Collections.sort(mCategories);
 		}
-		
+
 		public boolean isCategory(int position) {
 			return position < mCategories.size();
 		}
-		
+
 		public boolean isEntry(int position) {
 			return position >= mCategories.size();
 		}
@@ -168,7 +164,7 @@ public class GoogleSelectionActivity extends Activity {
 		public long getItemId(int position) {
 			return position;
 		}
-		
+
 		@Override
 		public boolean hasStableIds() {
 			// TODO Auto-generated method stub
@@ -196,62 +192,51 @@ public class GoogleSelectionActivity extends Activity {
 			return view;
 		}		
 	}
-	
-	   private class ModeCallback implements ListView.MultiChoiceModeListener {
 
-	        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-	            MenuInflater inflater = getMenuInflater();
-	            inflater.inflate(R.menu.google_import_menu, menu);
-	            mode.setTitle("Select Items");
-	            return true;
-	        }
+	private class ModeCallback implements ListView.MultiChoiceModeListener {
 
-	        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-	            return true;
-	        }
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.google_import_menu, menu);
+			mode.setTitle("Select Items");
+			return true;
+		}
 
-	        @SuppressWarnings("unchecked")
-			public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-//	            switch (item.getItemId()) {
-//	            case R.id.share:
-//	                Toast.makeText(List16.this, "Shared " + getListView().getCheckedItemCount() +
-//	                        " items", Toast.LENGTH_SHORT).show();
-//	                mode.finish();
-//	                break;
-//	            default:
-//	                Toast.makeText(List16.this, "Clicked " + item.getTitle(),
-//	                        Toast.LENGTH_SHORT).show();
-//	                break;
-//	            }
-	        	ListView view = mView;
-	        	List<Pair<String,String> > nameUrlPairs = new LinkedList<Pair<String,String> >();
-	        	for (long id : view.getCheckedItemIds()) {
-	        		@SuppressWarnings("unchecked")
-					Map<String,String> entry = (Map<String,String>)((GoogleAdapter)view.getAdapter()).getItem((int)id);
-	        		nameUrlPairs.add(new Pair<String,String>(entry.get("title"), entry.get("id")));	        			        		
-	        	}
-	        	//new DownloadFeedTask(getParent(), mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
-	        	new DownloadFeedTask(GoogleSelectionActivity.this, mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return true;
+		}
 
-	        	//GoogleSelectionActivity.this.setContentView(R.layout.import_dialog);
-	        	mode.finish();
-	            return true;
-	        }
-	        
-	        
+		@SuppressWarnings("unchecked")
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			ListView view = mView;
+			List<Pair<String,String> > nameUrlPairs = new LinkedList<Pair<String,String> >();
+			for (long id : view.getCheckedItemIds()) {
+				@SuppressWarnings("unchecked")
+				Map<String,String> entry = (Map<String,String>)((GoogleAdapter)view.getAdapter()).getItem((int)id);
+				nameUrlPairs.add(new Pair<String,String>(entry.get("title"), entry.get("id")));	        			        		
+			}
+			//new DownloadFeedTask(getParent(), mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
+			new DownloadFeedTask(GoogleSelectionActivity.this, mDb).addFeeds(nameUrlPairs.toArray(new Pair[nameUrlPairs.size()]));
 
-	        public void onDestroyActionMode(ActionMode mode) {
-	        	ListView view = mView;
-	        	view.clearChoices();
-	        	((GoogleAdapter)view.getAdapter()).notifyDataSetChanged();
-	        	mActionMode = null;
-	        }
+			//GoogleSelectionActivity.this.setContentView(R.layout.import_dialog);
+			mode.finish();
+			return true;
+		}
 
-	        public void onItemCheckedStateChanged(ActionMode mode,
-	                int position, long id, boolean checked) {
-	        	//Not getting called
-	        	return;
-	        }
-	        
-	    }
+
+
+		public void onDestroyActionMode(ActionMode mode) {
+			ListView view = mView;
+			view.clearChoices();
+			((GoogleAdapter)view.getAdapter()).notifyDataSetChanged();
+			mActionMode = null;
+		}
+
+		public void onItemCheckedStateChanged(ActionMode mode,
+				int position, long id, boolean checked) {
+			//Not getting called
+			return;
+		}
+
+	}
 }
